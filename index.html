@@ -1,0 +1,3582 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central de Gestão Pessoal & Produtividade</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              200: '#bae0fd',
+              500: '#1d6cd8',
+              600: '#1557b0',
+              700: '#11448b',
+              800: '#103971',
+              900: '#0d2d59',
+            },
+            status: {
+              pending: '#f59e0b',
+              progress: '#2563eb',
+              done: '#10b981',
+              urgent: '#ef4444',
+              overdue: '#dc2626'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .badge-category {
+      background-color: var(--cat-bg, #f1f5f9);
+      color: var(--cat-color, #334155);
+      border: 1px solid var(--cat-border, #e2e8f0);
+    }
+  </style>
+</head>
+<body class="h-full flex overflow-hidden text-slate-800 bg-slate-50 antialiased selection:bg-brand-100 selection:text-brand-900">
+
+  <!-- AUTHENTICATION GATE (Restrito para andre.schlickmann@grupotbx.com.br) -->
+  <div id="auth-gate-overlay" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200/80 w-full max-w-md p-8 text-center relative overflow-hidden">
+      <!-- Top Accent Bar -->
+      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-600 via-blue-500 to-indigo-600"></div>
+
+      <div class="w-14 h-14 rounded-2xl bg-brand-50 border border-brand-100 text-brand-600 mx-auto flex items-center justify-center shadow-xs mb-4">
+        <i data-lucide="shield-check" class="w-7 h-7"></i>
+      </div>
+
+      <h2 class="text-lg font-bold text-slate-900 tracking-tight">Central de Gestão e Rotina</h2>
+      <p class="text-xs text-slate-500 mt-1">Ambiente corporativo de alta produtividade</p>
+
+      <div class="my-6 p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-left">
+        <div class="flex items-center gap-2 text-slate-700 font-semibold text-xs mb-1">
+          <i data-lucide="lock" class="w-3.5 h-3.5 text-brand-600"></i>
+          <span>Acesso Privado e Restrito</span>
+        </div>
+        <p class="text-[11px] text-slate-500 leading-relaxed">
+          Este sistema está parametrizado exclusivamente para o usuário:
+        </p>
+        <div class="mt-2 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg font-mono text-[11px] text-brand-700 font-semibold truncate flex items-center gap-1.5">
+          <i data-lucide="mail" class="w-3 h-3 text-slate-400"></i>
+          <span>andre.schlickmann@grupotbx.com.br</span>
+        </div>
+      </div>
+
+      <!-- Error banner if unauthorized account logs in -->
+      <div id="auth-error-banner" class="hidden mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 text-left flex items-start gap-2">
+        <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5"></i>
+        <div id="auth-error-message" class="text-[11px] leading-tight"></div>
+      </div>
+
+      <!-- Google Sign In Button -->
+      <button 
+        type="button" 
+        id="btn-google-login" 
+        onclick="handleGoogleLogin()" 
+        class="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 font-semibold text-xs py-3 px-4 rounded-xl border border-slate-300 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span id="btn-login-text">Entrar com Conta Google</span>
+      </button>
+
+      <p class="text-[10px] text-slate-400 mt-4">
+        A autenticação é processada com segurança via Google Identity & Firebase Auth.
+      </p>
+    </div>
+  </div>
+
+  <!-- Application Shell Container -->
+  <div id="app" class="flex w-full h-full relative">
+
+    <!-- Left Sidebar Overlay on Mobile -->
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-sm transition-opacity hidden md:hidden"></div>
+
+    <!-- Left Navigation Sidebar -->
+    <aside id="main-sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-72 flex-shrink-0 bg-white border-r border-slate-200/80 flex flex-col transition-all duration-300 transform -translate-x-full md:translate-x-0 shadow-sm">
+      
+      <!-- Brand & Header -->
+      <div class="h-16 px-5 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white shadow-sm font-bold text-sm tracking-wider">
+            CG
+          </div>
+          <div>
+            <h1 class="text-sm font-semibold text-slate-900 leading-tight">Central de Gestão</h1>
+            <p class="text-[11px] text-slate-400 font-medium">Produtividade & Operações</p>
+          </div>
+        </div>
+        <button onclick="toggleSidebar(false)" class="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Quick Action Button in Sidebar -->
+      <div class="p-4 border-b border-slate-100 space-y-2">
+        <button onclick="openActivityModal()" class="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-medium text-xs py-2.5 px-3 rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Nova Atividade</span>
+        </button>
+      </div>
+
+      <!-- Navigation Links & Dynamic Filters -->
+      <div class="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+        <!-- Main Navigation -->
+        <div>
+          <span class="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Navegação</span>
+          <nav class="mt-2 space-y-0.5">
+            <button onclick="setAppView('my-day')" id="nav-btn-my-day" class="nav-item w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2.5">
+                <i data-lucide="sun" class="w-4 h-4 text-amber-500"></i>
+                <span>Meu Dia</span>
+              </span>
+              <span id="badge-my-day-count" class="text-[11px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold">0</span>
+            </button>
+
+            <button onclick="setAppView('all-tasks')" id="nav-btn-all-tasks" class="nav-item w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2.5">
+                <i data-lucide="layers" class="w-4 h-4 text-slate-500"></i>
+                <span>Todas as Atividades</span>
+              </span>
+              <span id="badge-all-count" class="text-[11px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold">0</span>
+            </button>
+
+            <button onclick="setAppView('notes-calendar')" id="nav-btn-notes-calendar" class="nav-item w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2.5">
+                <i data-lucide="calendar" class="w-4 h-4 text-brand-600"></i>
+                <span>Calendário de Anotações</span>
+              </span>
+              <span id="badge-notes-count" class="text-[11px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold">0</span>
+            </button>
+
+            <button onclick="setAppView('history')" id="nav-btn-history" class="nav-item w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2.5">
+                <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
+                <span>Histórico & Concluídas</span>
+              </span>
+              <span id="badge-history-count" class="text-[11px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold">0</span>
+            </button>
+
+            <button onclick="setAppView('archived')" id="nav-btn-archived" class="nav-item w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2.5">
+                <i data-lucide="archive" class="w-4 h-4 text-slate-400"></i>
+                <span>Arquivadas</span>
+              </span>
+              <span id="badge-archived-count" class="text-[11px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold">0</span>
+            </button>
+
+            <button onclick="setAppView('settings')" id="nav-btn-settings" class="nav-item w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2.5">
+                <i data-lucide="sliders" class="w-4 h-4 text-slate-500"></i>
+                <span>Configurações & Backup</span>
+              </span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Filter Section -->
+        <div>
+          <div class="flex items-center justify-between px-3 py-1 cursor-pointer select-none rounded-lg hover:bg-slate-50 transition" onclick="toggleSidebarFilters()">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Filtros de Atividades</span>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="event.stopPropagation(); resetFilters()" title="Limpar filtros" class="text-[10px] text-brand-600 hover:underline">Limpar</button>
+              <button type="button" class="p-1 rounded text-slate-400 hover:text-slate-600 focus:outline-none" aria-label="Expandir ou recolher filtros">
+                <i data-lucide="chevron-down" id="icon-sidebar-filters" class="w-3.5 h-3.5 transition-transform duration-200"></i>
+              </button>
+            </div>
+          </div>
+          <nav id="sidebar-filters-container" class="mt-2 space-y-0.5 transition-all duration-300 overflow-hidden">
+            <button onclick="setStatusFilter('all')" id="filter-btn-all" class="filter-item w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                <span>Todas</span>
+              </span>
+              <span id="count-filter-all" class="text-[11px] text-slate-500">0</span>
+            </button>
+
+            <button onclick="setStatusFilter('pending')" id="filter-btn-pending" class="filter-item w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>Pendentes</span>
+              </span>
+              <span id="count-filter-pending" class="text-[11px] text-slate-500">0</span>
+            </button>
+
+            <button onclick="setStatusFilter('in_progress')" id="filter-btn-in_progress" class="filter-item w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                <span>Em andamento</span>
+              </span>
+              <span id="count-filter-progress" class="text-[11px] text-slate-500">0</span>
+            </button>
+
+            <button onclick="setStatusFilter('completed')" id="filter-btn-completed" class="filter-item w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Concluídas</span>
+              </span>
+              <span id="count-filter-completed" class="text-[11px] text-slate-500">0</span>
+            </button>
+
+            <button onclick="setStatusFilter('overdue')" id="filter-btn-overdue" class="filter-item w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-rose-600"></span>
+                <span>Atrasadas</span>
+              </span>
+              <span id="count-filter-overdue" class="text-[11px] font-semibold text-rose-600">0</span>
+            </button>
+
+            <button onclick="setStatusFilter('no_due')" id="filter-btn-no_due" class="filter-item w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                <span>Sem prazo definido</span>
+              </span>
+              <span id="count-filter-no_due" class="text-[11px] text-slate-500">0</span>
+            </button>
+
+            <button onclick="setStatusFilter('recent')" id="filter-btn-recent" class="filter-item w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 hover:bg-slate-100 transition">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                <span>Criadas recentemente</span>
+              </span>
+              <span id="count-filter-recent" class="text-[11px] text-slate-500">0</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Categories Section -->
+        <div>
+          <div class="flex items-center justify-between px-3 mb-1 cursor-pointer select-none rounded-lg hover:bg-slate-50 transition" onclick="toggleSidebarCategories()">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Categorias (14)</span>
+            <div class="flex items-center gap-1.5">
+              <button onclick="event.stopPropagation(); openCategoryManageModal()" title="Gerenciar Categorias" class="text-slate-400 hover:text-slate-600">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              </button>
+              <button type="button" class="p-1 rounded text-slate-400 hover:text-slate-600 focus:outline-none" aria-label="Expandir ou recolher categorias">
+                <i data-lucide="chevron-down" id="icon-sidebar-categories" class="w-3.5 h-3.5 transition-transform duration-200"></i>
+              </button>
+            </div>
+          </div>
+          <div id="sidebar-categories-list" class="space-y-0.5 max-h-56 overflow-y-auto pr-1 transition-all duration-300">
+            <!-- Dynamically populated categories -->
+          </div>
+        </div>
+      </div>
+
+      <!-- User footer info -->
+      <div class="p-3 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-1.5 text-xs text-slate-500">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div id="cloud-status-dot" class="w-2 h-2 rounded-full bg-amber-400" title="Conectando ao armazenamento"></div>
+            <span id="cloud-status-text" class="font-medium text-slate-600">Autenticando...</span>
+          </div>
+          <span id="system-time-display" class="font-mono text-[11px] text-slate-400">--:--</span>
+        </div>
+        <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+          <span class="truncate max-w-[190px]" id="cloud-user-id" title="Usuário Autenticado">Aguardando login...</span>
+          <button type="button" onclick="handleLogout()" title="Sair da Conta" class="text-slate-400 hover:text-rose-600 p-1 rounded hover:bg-slate-100 transition">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
+      
+      <!-- Top Bar: Global Search & Breadcrumb -->
+      <header class="h-16 bg-white border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between gap-4 z-20 flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar(true)" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <div>
+            <h2 id="current-view-title" class="text-base font-semibold text-slate-900 tracking-tight">Meu Dia</h2>
+            <p id="current-view-subtitle" class="text-xs text-slate-400">Visão executiva e prioridades imediatas</p>
+          </div>
+        </div>
+
+        <!-- Global Search Input & Quick New Note -->
+        <div class="flex items-center gap-3 flex-1 max-w-lg justify-end">
+          <div class="relative w-full max-w-xs sm:max-w-sm">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="text" 
+              id="global-search-input"
+              oninput="handleGlobalSearch(this.value)"
+              placeholder="Pesquisar atividades, notas, tags..." 
+              class="w-full text-xs pl-9 pr-8 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all placeholder:text-slate-400"
+            />
+            <button id="search-clear-btn" onclick="clearGlobalSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <button onclick="openNoteModalForToday()" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 py-2 px-3 rounded-lg shadow-2xs transition">
+            <i data-lucide="pen-line" class="w-3.5 h-3.5 text-brand-600"></i>
+            <span>Anotação de Hoje</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic Views Wrapper -->
+      <main class="flex-1 overflow-y-auto p-4 sm:p-6" id="view-container">
+
+        <!-- VIEW 1: MEU DIA (Dashboard Executivo) -->
+        <div id="view-my-day" class="space-y-6 max-w-7xl mx-auto">
+          
+          <!-- Header Greeting and Completion Bar -->
+          <div class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span id="greeting-badge" class="text-xs font-medium px-2 py-0.5 rounded-full bg-brand-50 text-brand-700">Painel Diário</span>
+                  <span id="current-full-date" class="text-xs text-slate-400">Terça-feira, 13 de Outubro de 2026</span>
+                </div>
+                <h3 id="greeting-text" class="text-xl font-bold text-slate-900 mt-1">Bom dia! Pronto para a gestão do dia?</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Aqui estão as atividades críticas, vencimentos e pendências que exigem sua atenção.</p>
+              </div>
+
+              <!-- Daily Goal Progress -->
+              <div class="lg:w-80 p-3.5 rounded-lg bg-slate-50 border border-slate-100">
+                <div class="flex justify-between items-center text-xs mb-1.5">
+                  <span class="font-medium text-slate-700 flex items-center gap-1.5">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-brand-600"></i>
+                    <span>Conclusão Prevista para Hoje</span>
+                  </span>
+                  <span id="daily-progress-text" class="font-semibold text-slate-900">0%</span>
+                </div>
+                <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div id="daily-progress-bar" class="bg-brand-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div id="daily-progress-subtext" class="text-[11px] text-slate-400 mt-1.5 text-right">0 de 0 concluídas</div>
+              </div>
+            </div>
+
+            <!-- 4 Quick KPI Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-slate-100">
+              <div onclick="filterFromKpi('today')" class="cursor-pointer group p-3 rounded-lg border border-slate-100 hover:border-brand-200 hover:bg-brand-50/30 transition">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-slate-500">Previstas Hoje</span>
+                  <i data-lucide="calendar-check" class="w-4 h-4 text-brand-600"></i>
+                </div>
+                <div id="kpi-today-count" class="text-xl font-bold text-slate-900 mt-1">0</div>
+                <span class="text-[10px] text-slate-400 group-hover:text-brand-600 transition">Ver atividades &rarr;</span>
+              </div>
+
+              <div onclick="filterFromKpi('overdue')" class="cursor-pointer group p-3 rounded-lg border border-slate-100 hover:border-rose-200 hover:bg-rose-50/30 transition">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-rose-600">Atrasadas</span>
+                  <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
+                </div>
+                <div id="kpi-overdue-count" class="text-xl font-bold text-rose-600 mt-1">0</div>
+                <span class="text-[10px] text-rose-400 group-hover:text-rose-600 transition">Atenção imediata &rarr;</span>
+              </div>
+
+              <div onclick="filterFromKpi('in_progress')" class="cursor-pointer group p-3 rounded-lg border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 transition">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-slate-500">Em Andamento</span>
+                  <i data-lucide="play" class="w-4 h-4 text-blue-600"></i>
+                </div>
+                <div id="kpi-progress-count" class="text-xl font-bold text-slate-900 mt-1">0</div>
+                <span class="text-[10px] text-slate-400 group-hover:text-blue-600 transition">Operações ativas &rarr;</span>
+              </div>
+
+              <div onclick="filterFromKpi('done_today')" class="cursor-pointer group p-3 rounded-lg border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/30 transition">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-medium text-emerald-600">Concluídas Hoje</span>
+                  <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                </div>
+                <div id="kpi-done-today-count" class="text-xl font-bold text-emerald-600 mt-1">0</div>
+                <span class="text-[10px] text-emerald-400 group-hover:text-emerald-600 transition">Ver resultados &rarr;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subtasks Panel: Vencem Hoje & Na Semana -->
+          <div class="bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                  <i data-lucide="check-square" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                    <span>Subtarefas Operacionais</span>
+                    <span id="badge-subtasks-total-count" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">0</span>
+                  </h4>
+                  <p class="text-[11px] text-slate-400">Prazos de entrega imediatos vinculados às atividades principais (clique para abrir o card)</p>
+                </div>
+              </div>
+
+              <!-- Filter Tabs: Hoje / Na Semana / Todas Pendentes -->
+              <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                <button type="button" onclick="setSubtasksWidgetTab('today')" id="tab-subtasks-today" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-slate-800 shadow-2xs transition flex items-center gap-1.5">
+                  <span>Hoje</span>
+                  <span id="badge-subtasks-today" class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-600 font-bold">0</span>
+                </button>
+                <button type="button" onclick="setSubtasksWidgetTab('week')" id="tab-subtasks-week" class="px-2.5 py-1 text-xs font-medium rounded-md text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+                  <span>Na Semana</span>
+                  <span id="badge-subtasks-week" class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200/60 text-slate-600 font-bold">0</span>
+                </button>
+                <button type="button" onclick="setSubtasksWidgetTab('all_pending')" id="tab-subtasks-all" class="px-2.5 py-1 text-xs font-medium rounded-md text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5">
+                  <span>Todas Pendentes</span>
+                  <span id="badge-subtasks-all" class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200/60 text-slate-600 font-bold">0</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Subtasks list items -->
+            <div id="my-day-subtasks-list" class="mt-3 divide-y divide-slate-100 max-h-64 overflow-y-auto pr-1">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Accordion/Sections for My Day -->
+          <div class="space-y-4">
+            
+            <!-- Section 1: Prioridades Críticas (Urgente / Alta) -->
+            <section class="bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-2xs">
+              <div class="px-5 py-3.5 bg-rose-50/40 border-b border-rose-100 flex items-center justify-between cursor-pointer" onclick="toggleSection('section-urgent-body')">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                  <h4 class="text-xs font-bold text-rose-950 uppercase tracking-wide">1. Prioridades do Dia (Urgentes e Altas)</h4>
+                  <span id="badge-section-urgent" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">0</span>
+                </div>
+                <i data-lucide="chevron-down" id="icon-section-urgent-body" class="w-4 h-4 text-slate-400 transition-transform"></i>
+              </div>
+              <div id="section-urgent-body" class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- Injected cards -->
+              </div>
+            </section>
+
+            <!-- Section 2: Previstas para Hoje -->
+            <section class="bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-2xs">
+              <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between cursor-pointer" onclick="toggleSection('section-today-body')">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+                  <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">2. Atividades Previstas para Hoje</h4>
+                  <span id="badge-section-today" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">0</span>
+                </div>
+                <i data-lucide="chevron-down" id="icon-section-today-body" class="w-4 h-4 text-slate-400 transition-transform"></i>
+              </div>
+              <div id="section-today-body" class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- Injected cards -->
+              </div>
+            </section>
+
+            <!-- Section 3: Atrasadas -->
+            <section class="bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-2xs">
+              <div class="px-5 py-3.5 bg-amber-50/30 border-b border-amber-100 flex items-center justify-between cursor-pointer" onclick="toggleSection('section-overdue-body')">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+                  <h4 class="text-xs font-bold text-amber-950 uppercase tracking-wide">3. Atividades Atrasadas (Pendências Anteriores)</h4>
+                  <span id="badge-section-overdue" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">0</span>
+                </div>
+                <i data-lucide="chevron-down" id="icon-section-overdue-body" class="w-4 h-4 text-slate-400 transition-transform"></i>
+              </div>
+              <div id="section-overdue-body" class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- Injected cards -->
+              </div>
+            </section>
+
+            <!-- Section 4: Em Andamento -->
+            <section class="bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-2xs">
+              <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between cursor-pointer" onclick="toggleSection('section-progress-body')">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                  <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">4. Em Andamento</h4>
+                  <span id="badge-section-progress" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">0</span>
+                </div>
+                <i data-lucide="chevron-down" id="icon-section-progress-body" class="w-4 h-4 text-slate-400 transition-transform"></i>
+              </div>
+              <div id="section-progress-body" class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- Injected cards -->
+              </div>
+            </section>
+
+            <!-- Section 5: Concluídas Hoje -->
+            <section class="bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-2xs">
+              <div class="px-5 py-3.5 bg-emerald-50/30 border-b border-emerald-100 flex items-center justify-between cursor-pointer" onclick="toggleSection('section-done-body')">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  <h4 class="text-xs font-bold text-emerald-950 uppercase tracking-wide">5. Concluídas Hoje</h4>
+                  <span id="badge-section-done" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">0</span>
+                </div>
+                <i data-lucide="chevron-down" id="icon-section-done-body" class="w-4 h-4 text-slate-400 transition-transform"></i>
+              </div>
+              <div id="section-done-body" class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- Injected cards -->
+              </div>
+            </section>
+
+          </div>
+        </div>
+
+        <!-- VIEW 2: TODAS AS ATIVIDADES (Cards & List view) -->
+        <div id="view-all-tasks" class="space-y-4 max-w-7xl mx-auto hidden">
+          
+          <!-- Control Bar with Expandable Filter Toggle -->
+          <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <!-- Filter Expansion Button -->
+              <div class="flex items-center gap-2">
+                <button onclick="toggleAllTasksFilterBar()" id="btn-toggle-filters-bar" class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition">
+                  <i data-lucide="filter" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <span>Filtros & Ordenação</span>
+                  <i data-lucide="chevron-down" id="icon-tasks-filter-toggle" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
+                </button>
+                <div id="active-filter-indicator" class="hidden text-[11px] font-medium text-brand-700 bg-brand-50 px-2 py-0.5 rounded-md">
+                  Filtros ativos
+                </div>
+              </div>
+
+              <!-- Layout toggle buttons: Grid vs Table/List -->
+              <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                <button onclick="setDisplayMode('grid')" id="btn-mode-grid" class="p-1.5 rounded-md text-xs font-medium bg-white text-slate-800 shadow-2xs transition">
+                  <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                </button>
+                <button onclick="setDisplayMode('list')" id="btn-mode-list" class="p-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 transition">
+                  <i data-lucide="list" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Expandable Filters Section (Hidden by default or toggled) -->
+            <div id="all-tasks-filters-drawer" class="hidden pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <!-- Category dropdown filter -->
+                <div class="relative">
+                  <select id="filter-select-category" onchange="handleFilterCategoryChange(this.value)" class="text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 pr-7 focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+                    <option value="ALL">Todas as Categorias</option>
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
+                <!-- Priority dropdown filter -->
+                <div class="relative">
+                  <select id="filter-select-priority" onchange="handleFilterPriorityChange(this.value)" class="text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 pr-7 focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+                    <option value="ALL">Todas as Prioridades</option>
+                    <option value="Urgente">Urgente</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Média">Média</option>
+                    <option value="Baixa">Baixa</option>
+                  </select>
+                </div>
+
+                <!-- Smart Sort selector -->
+                <div class="relative">
+                  <select id="filter-select-sort" onchange="handleSortChange(this.value)" class="text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 pr-7 focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+                    <option value="smart">Ordem Inteligente (Urgência + Prazo)</option>
+                    <option value="deadline_asc">Prazo Mais Próximo</option>
+                    <option value="overdue_first">Mais Atrasadas Primeiro</option>
+                    <option value="priority_desc">Maior Prioridade</option>
+                    <option value="created_desc">Criadas Recentemente</option>
+                    <option value="created_asc">Mais Antigas</option>
+                    <option value="alpha_asc">Ordem Alfabética (A-Z)</option>
+                  </select>
+                </div>
+
+                <button onclick="resetFilters()" class="text-xs text-slate-500 hover:text-slate-800 underline">Redefinir</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cards Grid Container -->
+          <div id="tasks-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dynamically populated cards -->
+          </div>
+
+          <!-- List Table Container (hidden by default) -->
+          <div id="tasks-list-container" class="bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-2xs hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4">Código & Atividade</th>
+                    <th class="py-3 px-4">Categoria</th>
+                    <th class="py-3 px-4">Prioridade</th>
+                    <th class="py-3 px-4">Prazo Previsto</th>
+                    <th class="py-3 px-4">Subtarefas</th>
+                    <th class="py-3 px-4 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tasks-table-body" class="divide-y divide-slate-100">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div id="tasks-empty-state" class="hidden bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center">
+            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400 mb-3">
+              <i data-lucide="clipboard-list" class="w-6 h-6"></i>
+            </div>
+            <h4 class="text-sm font-semibold text-slate-800">Nenhuma atividade encontrada</h4>
+            <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Tente ajustar seus filtros de busca ou cadastre uma nova atividade.</p>
+            <button onclick="openActivityModal()" class="mt-4 inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-medium text-xs py-2 px-3.5 rounded-lg shadow-sm">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Criar Primeira Atividade</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- VIEW 3: CALENDÁRIO DE ANOTAÇÕES DIÁRIAS (Diário Executivo) -->
+        <div id="view-notes-calendar" class="space-y-5 max-w-7xl mx-auto hidden">
+          
+          <!-- Calendar Header Navigation -->
+          <div class="bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1">
+                <button onclick="changeCalendarMonth(-1)" class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition">
+                  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+                <button onclick="jumpToCalendarToday()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                  Hoje
+                </button>
+                <button onclick="changeCalendarMonth(1)" class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition">
+                  <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <div>
+                <h3 id="calendar-month-year-title" class="text-base font-bold text-slate-900 capitalize">Outubro 2026</h3>
+                <span class="text-[11px] text-slate-400 font-normal">Dica: Dê duplo clique em qualquer dia para abrir a anotação</span>
+              </div>
+            </div>
+
+            <!-- Notes Quick Stats & Search -->
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2"></i>
+                <input 
+                  type="text" 
+                  id="calendar-note-search"
+                  oninput="handleNoteContentSearch(this.value)"
+                  placeholder="Pesquisar nas anotações..." 
+                  class="text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                />
+              </div>
+
+              <button onclick="openNoteModalForToday()" class="inline-flex items-center gap-1.5 text-xs font-medium text-white bg-brand-600 hover:bg-brand-700 py-1.5 px-3 rounded-lg shadow-sm transition">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>Registrar Hoje</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Calendar Grid & Notes Preview Split -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <!-- Left 8 cols: Calendar Grid -->
+            <div class="lg:col-span-8 bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs">
+              <!-- Weekday Headers -->
+              <div class="grid grid-cols-7 gap-1 text-center font-semibold text-[11px] text-slate-400 uppercase py-2 border-b border-slate-100 mb-2">
+                <span>Dom</span>
+                <span>Seg</span>
+                <span>Ter</span>
+                <span>Qua</span>
+                <span>Qui</span>
+                <span>Sex</span>
+                <span>Sáb</span>
+              </div>
+              <!-- Days Cells Grid -->
+              <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5">
+                <!-- Dynamically generated day boxes -->
+              </div>
+            </div>
+
+            <!-- Right 4 cols: Selected Day Note Preview & Quick Editor -->
+            <div class="lg:col-span-4 space-y-4">
+              <div class="bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div>
+                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Anotação Selecionada</span>
+                    <h4 id="calendar-selected-date-label" class="text-sm font-bold text-slate-900">Hoje</h4>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <span id="note-save-status-indicator" class="text-[10px] text-slate-400 font-medium hidden">Salvo</span>
+                    <button onclick="openNoteModal(currentSelectedCalendarDate)" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg" title="Abrir em Tela Completa">
+                      <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div id="calendar-selected-note-content" class="mt-3 space-y-3">
+                  <!-- Filled dynamically -->
+                </div>
+              </div>
+
+              <!-- Chronological Notes Feed -->
+              <div class="bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs">
+                <h5 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <i data-lucide="history" class="w-3.5 h-3.5 text-slate-400"></i>
+                  <span>Últimas Anotações Feitas</span>
+                </h5>
+                <div id="recent-notes-list" class="space-y-2 max-h-64 overflow-y-auto pr-1 text-xs">
+                  <!-- Dynamic notes list -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- VIEW 4: HISTÓRICO & AUDITORIA -->
+        <div id="view-history" class="space-y-4 max-w-7xl mx-auto hidden">
+          <div class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <h3 class="text-base font-bold text-slate-900">Histórico de Conclusões & Atividades</h3>
+                <p class="text-xs text-slate-500">Consulte atividades finalizadas, datas efetivas e linha do tempo de operações.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="date" id="history-filter-start" onchange="renderHistoryView()" class="text-xs px-2.5 py-1.5 border border-slate-200 rounded-lg">
+                <span class="text-xs text-slate-400">até</span>
+                <input type="date" id="history-filter-end" onchange="renderHistoryView()" class="text-xs px-2.5 py-1.5 border border-slate-200 rounded-lg">
+              </div>
+            </div>
+
+            <!-- Historical Metrics -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
+              <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <span class="text-[11px] font-medium text-slate-500">Total Concluídas</span>
+                <div id="history-total-completed" class="text-xl font-bold text-emerald-600 mt-1">0</div>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <span class="text-[11px] font-medium text-slate-500">Concluídas no Prazo</span>
+                <div id="history-on-time-count" class="text-xl font-bold text-slate-900 mt-1">0</div>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <span class="text-[11px] font-medium text-slate-500">Concluídas com Atraso</span>
+                <div id="history-late-count" class="text-xl font-bold text-amber-600 mt-1">0</div>
+              </div>
+            </div>
+
+            <!-- Completed Activities Timeline -->
+            <div id="history-timeline-container" class="space-y-3 mt-4">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 5: ITENS ARQUIVADOS -->
+        <div id="view-archived" class="space-y-4 max-w-7xl mx-auto hidden">
+          <div class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 class="text-base font-bold text-slate-900">Atividades Arquivadas</h3>
+                <p class="text-xs text-slate-500">Registros guardados fora do fluxo ativo. Você pode restaurar ou excluir permanentemente.</p>
+              </div>
+              <button onclick="restoreAllArchived()" class="text-xs font-medium text-brand-600 hover:underline">Restaurar Todas</button>
+            </div>
+            <div id="archived-items-container" class="space-y-2 mt-4">
+              <!-- dynamic -->
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 6: CONFIGURAÇÕES & BACKUP -->
+        <div id="view-settings" class="space-y-5 max-w-4xl mx-auto hidden">
+          <div class="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs space-y-5">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">Configurações do Sistema & Armazenamento</h3>
+              <p class="text-xs text-slate-500">Gerencie a preservação dos dados, fuso horário e parâmetros de produtividade.</p>
+            </div>
+
+            <div class="p-4 rounded-lg bg-slate-50 border border-slate-200/70 space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-semibold text-slate-800">Fuso Horário Operacional</h4>
+                  <p class="text-[11px] text-slate-500">Padrão: Horário de Brasília (America/Sao_Paulo)</p>
+                </div>
+                <span class="text-xs font-mono font-medium px-2 py-1 bg-white border border-slate-200 rounded text-slate-700">GMT-3</span>
+              </div>
+            </div>
+
+            <!-- Export & Import Data Section -->
+            <div class="p-4 rounded-lg bg-slate-50 border border-slate-200/70 space-y-3">
+              <div>
+                <h4 class="text-xs font-semibold text-slate-800">Backup & Portabilidade de Dados (JSON)</h4>
+                <p class="text-[11px] text-slate-500">Exporte todo o seu histórico, notas e atividades em arquivo único ou importe para restaurar dados.</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-3 pt-2">
+                <button onclick="exportDataJSON()" class="inline-flex items-center gap-2 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 py-2 px-3.5 rounded-lg shadow-2xs transition">
+                  <i data-lucide="download" class="w-4 h-4 text-brand-600"></i>
+                  <span>Exportar Dados (Backup JSON)</span>
+                </button>
+                <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 py-2 px-3.5 rounded-lg shadow-2xs transition cursor-pointer">
+                  <i data-lucide="upload" class="w-4 h-4 text-emerald-600"></i>
+                  <span>Importar Arquivo JSON</span>
+                  <input type="file" id="json-import-input" accept=".json" onchange="importDataJSON(event)" class="hidden">
+                </label>
+                <button onclick="confirmResetAllData()" class="text-xs text-rose-600 hover:underline ml-auto">Limpar Todos os Dados</button>
+              </div>
+            </div>
+
+            <!-- Category Manager Inline View -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-semibold text-slate-800">Categorias Cadastradas</h4>
+                <button onclick="openCategoryManageModal()" class="text-xs font-medium text-brand-600 hover:underline">+ Nova Categoria</button>
+              </div>
+              <div id="settings-categories-table" class="space-y-1.5">
+                <!-- dynamic -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- Slide-over Right Details Panel (Non-intrusive context preserving) -->
+    <div id="details-panel" class="fixed inset-y-0 right-0 z-50 w-full sm:w-[500px] lg:w-[540px] bg-white border-l border-slate-200/80 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+      
+      <!-- Details Panel Header -->
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div class="flex items-center gap-2">
+          <span id="detail-code-badge" class="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-brand-50 text-brand-700 border border-brand-200">ATIV-000</span>
+          <span id="detail-status-badge" class="text-xs px-2 py-0.5 rounded-full font-semibold">Pendente</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button onclick="editCurrentDetailActivity()" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg" title="Editar Atividade">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+          </button>
+          <button onclick="duplicateCurrentDetailActivity()" class="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg" title="Duplicar">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+          </button>
+          <button onclick="archiveCurrentDetailActivity()" class="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-slate-100 rounded-lg" title="Arquivar">
+            <i data-lucide="archive" class="w-4 h-4"></i>
+          </button>
+          <button onclick="confirmDeleteCurrentDetailActivity()" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-slate-100 rounded-lg" title="Excluir">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+          <button onclick="closeDetailsPanel()" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-lg ml-1">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Details Panel Scrollable Body -->
+      <div class="flex-1 overflow-y-auto p-5 space-y-6">
+        
+        <!-- Title and Category/Priority Badges -->
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span id="detail-category-badge" class="badge-category text-[11px] font-semibold px-2 py-0.5 rounded-md">Categoria</span>
+            <span id="detail-priority-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-md">Prioridade</span>
+            <span id="detail-overdue-alert" class="hidden text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <i data-lucide="clock" class="w-3 h-3"></i> Atrasada
+            </span>
+          </div>
+          <h3 id="detail-title" class="text-base font-bold text-slate-900 leading-snug">Título da Atividade</h3>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Descrição Detalhada</h5>
+          <p id="detail-description" class="text-xs text-slate-600 whitespace-pre-wrap leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
+            Nenhuma descrição detalhada.
+          </p>
+        </div>
+
+        <!-- Origin Daily Note Badge (if created from note) -->
+        <div id="detail-note-origin-box" class="hidden p-3 rounded-lg bg-blue-50 border border-blue-100 flex items-start gap-2.5 text-xs text-blue-900">
+          <i data-lucide="link" class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5"></i>
+          <div>
+            <span class="font-semibold">Vinculada a Anotação Diária:</span>
+            <p id="detail-note-origin-text" class="text-[11px] text-blue-700 mt-0.5"></p>
+            <button id="detail-note-origin-btn" class="mt-1 text-[11px] font-semibold text-blue-600 underline">Ver Anotação</button>
+          </div>
+        </div>
+
+        <!-- Operational Dates Grid -->
+        <div class="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+          <div>
+            <span class="text-[10px] text-slate-400 font-medium block">Previsão de Início</span>
+            <span id="detail-start-date" class="font-semibold text-slate-700">Não informado</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 font-medium block">Prazo de Conclusão</span>
+            <span id="detail-due-date" class="font-semibold text-slate-700">Não informado</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 font-medium block">Início Efetivo</span>
+            <span id="detail-real-start" class="text-slate-600 font-mono text-[11px]">--</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 font-medium block">Conclusão Efetiva</span>
+            <span id="detail-real-end" class="text-slate-600 font-mono text-[11px]">--</span>
+          </div>
+        </div>
+
+        <!-- Subtasks Section -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h5 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Subtarefas Operacionais</h5>
+              <p id="detail-subtasks-summary" class="text-[11px] text-slate-400">0 de 0 concluídas</p>
+            </div>
+            <button onclick="toggleNewSubtaskForm()" class="text-xs font-medium text-brand-600 hover:text-brand-700 flex items-center gap-1">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Adicionar Subtarefa</span>
+            </button>
+          </div>
+
+          <!-- Subtasks Progress Bar -->
+          <div id="detail-subtask-progress-bar-wrapper" class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-3 hidden">
+            <div id="detail-subtask-progress-bar" class="bg-brand-600 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+
+          <!-- All Subtasks Completed Banner Alert -->
+          <div id="subtasks-all-done-banner" class="hidden mb-3 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="check-check" class="w-4 h-4 text-emerald-600"></i>
+              <span>Todas as subtarefas foram concluídas!</span>
+            </div>
+            <button onclick="confirmCompleteFromSubtasks()" class="text-xs font-bold text-emerald-700 underline hover:text-emerald-800">Concluir Atividade?</button>
+          </div>
+
+          <!-- New Subtask inline input box -->
+          <div id="new-subtask-form" class="hidden mb-3 p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+            <input type="text" id="new-subtask-title" placeholder="Título da subtarefa..." class="w-full text-xs px-2.5 py-1.5 border border-slate-200 rounded bg-white focus:outline-none focus:ring-1 focus:ring-brand-500">
+            <div class="flex items-center justify-between">
+              <input type="date" id="new-subtask-due" class="text-[11px] px-2 py-1 border border-slate-200 rounded bg-white text-slate-600">
+              <div class="flex items-center gap-2">
+                <button onclick="toggleNewSubtaskForm()" class="text-xs text-slate-500 hover:text-slate-700">Cancelar</button>
+                <button onclick="saveNewSubtask()" class="text-xs bg-brand-600 text-white font-medium px-2.5 py-1 rounded shadow-2xs">Adicionar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subtasks List -->
+          <div id="detail-subtasks-list" class="space-y-1.5">
+            <!-- Dynamic Subtasks -->
+          </div>
+        </div>
+
+        <!-- Notes / Observations -->
+        <div class="space-y-3">
+          <div>
+            <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Observações Internas</h5>
+            <div id="detail-observations" class="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
+              Nenhuma observação interna adicional.
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit History Log of this Activity -->
+        <div>
+          <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Histórico de Alterações</h5>
+          <div id="detail-history-list" class="space-y-2 text-xs border-l-2 border-slate-200 pl-3">
+            <!-- Dynamic logs -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Details Panel Footer with Quick Status Actions -->
+      <div class="p-3.5 border-t border-slate-200 bg-slate-50/70 flex items-center justify-between gap-2">
+        <div id="detail-quick-actions" class="flex items-center gap-2 w-full">
+          <!-- Dynamic action button based on state -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MODAL: Nova / Editar Atividade -->
+    <div id="activity-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+      <div class="bg-white w-full max-w-xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+        
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <h3 id="modal-activity-title" class="text-sm font-bold text-slate-900">Cadastrar Nova Atividade</h3>
+          <button onclick="closeActivityModal()" class="text-slate-400 hover:text-slate-600">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <form id="activity-form" onsubmit="handleActivityFormSubmit(event)" class="p-5 overflow-y-auto space-y-4 text-xs">
+          <input type="hidden" id="form-activity-id">
+          <input type="hidden" id="form-activity-origin-note-date">
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Título da Atividade <span class="text-rose-500">*</span></label>
+            <input type="text" id="form-title" required placeholder="Ex: Avaliar manutenção preventiva da prensa 02" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none focus:border-brand-500">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Categoria <span class="text-rose-500">*</span></label>
+              <select id="form-category" required class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+                <!-- Dynamically options -->
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Prioridade <span class="text-rose-500">*</span></label>
+              <select id="form-priority" required class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+                <option value="Baixa">Baixa</option>
+                <option value="Média" selected>Média</option>
+                <option value="Alta">Alta</option>
+                <option value="Urgente">Urgente</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Data Prevista de Início</label>
+              <input type="date" id="form-start-date" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Data Prevista de Conclusão</label>
+              <input type="date" id="form-due-date" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Descrição Detalhada</label>
+            <textarea id="form-description" rows="3" placeholder="Detalhes operacionais, requisitos e escopo da atividade..." class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none"></textarea>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Observações Internas (Opcional)</label>
+            <input type="text" id="form-observations" placeholder="Notas complementares, contatos de fornecedores..." class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Palavras-chave ou Tags (separadas por vírgula)</label>
+            <input type="text" id="form-tags" placeholder="urgente, prensa, elétrica, compras" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+            <button type="button" onclick="closeActivityModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition">Cancelar</button>
+            <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition">Salvar Atividade</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- MODAL: Anotação Diária (Diário Executivo com Abas Estruturadas & Texto Livre) -->
+    <div id="note-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+      <div class="bg-white w-full max-w-3xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
+        
+        <!-- Note Modal Header -->
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <div class="flex items-center gap-2.5">
+            <i data-lucide="book-open" class="w-4 h-4 text-brand-600"></i>
+            <div>
+              <h3 id="note-modal-date-title" class="text-sm font-bold text-slate-900">Registro Diário - 13/10/2026</h3>
+              <p class="text-[11px] text-slate-400">Diário executivo de acontecimentos, reuniões e decisões</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="note-modal-saving-tag" class="text-[11px] text-slate-400 font-medium">Salvo</span>
+            <button onclick="closeNoteModal()" class="text-slate-400 hover:text-slate-600">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Note Modal Body -->
+        <div class="p-5 overflow-y-auto space-y-4 text-xs">
+          
+          <!-- Quick Transformation Banner: Select text to turn into task -->
+          <div class="p-3 bg-brand-50/60 border border-brand-100 rounded-lg flex items-center justify-between">
+            <div class="flex items-center gap-2 text-brand-900 text-xs">
+              <i data-lucide="sparkles" class="w-4 h-4 text-brand-600"></i>
+              <span>Transforme qualquer trecho de anotação em uma atividade acionável.</span>
+            </div>
+            <button onclick="convertCurrentNoteToTask()" class="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 bg-white border border-brand-200 hover:bg-brand-50 px-2.5 py-1 rounded shadow-2xs transition">
+              <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i>
+              <span>Transformar em Atividade</span>
+            </button>
+          </div>
+
+          <!-- Free-form text area (Mandatory focus) -->
+          <div>
+            <label class="block font-semibold text-slate-800 mb-1">Anotações Livres do Dia (Sem limite de caracteres)</label>
+            <textarea 
+              id="note-input-free-text" 
+              rows="6" 
+              oninput="handleNoteFieldInput()"
+              placeholder="Escreva livremente sobre o andamento do dia, telefonemas, alinhamentos, ideias ou pendências..."
+              class="w-full text-xs p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none leading-relaxed font-sans"
+            ></textarea>
+          </div>
+
+          <!-- Structured Optional Fields Accordion -->
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <button type="button" onclick="toggleNoteStructuredFields()" class="w-full px-4 py-2.5 bg-slate-50 flex items-center justify-between text-xs font-semibold text-slate-700 hover:bg-slate-100">
+              <span class="flex items-center gap-2">
+                <i data-lucide="layout-list" class="w-3.5 h-3.5 text-slate-500"></i>
+                <span>Campos Estruturados Opcionais (Decisões, Problemas, Reuniões)</span>
+              </span>
+              <i data-lucide="chevron-down" id="icon-structured-fields" class="w-4 h-4 text-slate-400"></i>
+            </button>
+            
+            <div id="note-structured-fields-body" class="p-4 space-y-3 bg-white hidden">
+              <div>
+                <label class="block font-medium text-slate-600 mb-1">Resumo Executivo do Dia</label>
+                <input type="text" id="note-input-summary" oninput="handleNoteFieldInput()" placeholder="Uma frase que sintetiza o dia..." class="w-full text-xs px-3 py-1.5 border border-slate-200 rounded">
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-medium text-slate-600 mb-1">Problemas Identificados</label>
+                  <textarea id="note-input-problems" rows="2" oninput="handleNoteFieldInput()" placeholder="Falhas, gargalos ou ocorrências..." class="w-full text-xs px-3 py-1.5 border border-slate-200 rounded"></textarea>
+                </div>
+                <div>
+                  <label class="block font-medium text-slate-600 mb-1">Decisões Tomadas</label>
+                  <textarea id="note-input-decisions" rows="2" oninput="handleNoteFieldInput()" placeholder="Aprovações, mudanças de rota, acordos..." class="w-full text-xs px-3 py-1.5 border border-slate-200 rounded"></textarea>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-medium text-slate-600 mb-1">Reuniões e Alinhamentos</label>
+                  <textarea id="note-input-meetings" rows="2" oninput="handleNoteFieldInput()" placeholder="Pautas tratadas e participantes..." class="w-full text-xs px-3 py-1.5 border border-slate-200 rounded"></textarea>
+                </div>
+                <div>
+                  <label class="block font-medium text-slate-600 mb-1">Ações Necessárias / Futuras</label>
+                  <textarea id="note-input-actions" rows="2" oninput="handleNoteFieldInput()" placeholder="Providências para os próximos dias..." class="w-full text-xs px-3 py-1.5 border border-slate-200 rounded"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activities created from this note display -->
+          <div id="note-linked-tasks-container" class="space-y-1.5">
+            <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Atividades Vinculadas a este Dia</h5>
+            <div id="note-linked-tasks-list" class="space-y-1">
+              <!-- populated dynamically -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Note Modal Footer -->
+        <div class="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+          <button type="button" onclick="confirmDeleteCurrentNote()" class="text-xs text-rose-600 hover:underline">Excluir Registro Deste Dia</button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="closeNoteModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition">Cancelar</button>
+            <button type="button" onclick="saveAndCloseNoteModal()" class="px-4 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition">Salvar Anotação</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MODAL: Gerenciar Categorias -->
+    <div id="category-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+      <div class="bg-white w-full max-w-md rounded-xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <h3 class="text-sm font-bold text-slate-900">Gerenciar Categorias</h3>
+          <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-slate-600">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div class="p-5 space-y-4 text-xs">
+          <!-- Add category form -->
+          <form onsubmit="handleNewCategorySubmit(event)" class="flex gap-2">
+            <input type="text" id="new-cat-name" required placeholder="Nova categoria..." class="flex-1 text-xs px-3 py-2 border border-slate-200 rounded-lg">
+            <input type="color" id="new-cat-color" value="#1d6cd8" class="w-9 h-9 p-0.5 border border-slate-200 rounded-lg cursor-pointer">
+            <button type="submit" class="px-3 py-2 bg-brand-600 text-white font-medium rounded-lg hover:bg-brand-700">Criar</button>
+          </form>
+          <!-- List -->
+          <div id="modal-category-list" class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+            <!-- Dynamic -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Confirmation Modal (No browser alert/confirm) -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+      <div class="bg-white w-full max-w-sm rounded-xl shadow-2xl border border-slate-200 p-5 text-center">
+        <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-3">
+          <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        </div>
+        <h4 id="confirm-modal-title" class="text-sm font-bold text-slate-900">Confirmar Ação</h4>
+        <p id="confirm-modal-message" class="text-xs text-slate-500 mt-1.5">Você tem certeza que deseja executar esta ação?</p>
+        <div class="flex items-center justify-center gap-2.5 mt-5">
+          <button onclick="resolveConfirm(false)" class="w-full px-3 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg">Cancelar</button>
+          <button id="confirm-modal-action-btn" onclick="resolveConfirm(true)" class="w-full px-3 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shadow-sm">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2.5 px-4 py-2.5 rounded-lg shadow-lg text-xs font-medium bg-slate-900 text-white">
+      <i id="toast-icon" data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+      <span id="toast-message">Mensagem</span>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+      getAuth, 
+      GoogleAuthProvider, 
+      signInWithPopup, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // E-mail estritamente autorizado
+    const ALLOWED_EMAIL = "andre.schlickmann@grupotbx.com.br";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'gestao-diaria-1ab71';
+
+    // Configuração oficial do Firebase fornecida pelo usuário
+    const firebaseConfig = {
+      apiKey: "AIzaSyBfZz5Y8FUA4y-uqlE_a1mFY_L-ujlMTos",
+      authDomain: "gestao-diaria-1ab71.firebaseapp.com",
+      projectId: "gestao-diaria-1ab71",
+      storageBucket: "gestao-diaria-1ab71.firebasestorage.app",
+      messagingSenderId: "85652620636",
+      appId: "1:85652620636:web:7102804f2b78b4f4e2ad99",
+      measurementId: "G-CY7VWVSLCD"
+    };
+
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let currentUserId = null;
+    let isCloudReady = false;
+
+    const INITIAL_CATEGORIES = [
+      { id: 'cat-1', name: 'Processo' },
+      { id: 'cat-2', name: 'Gestão' },
+      { id: 'cat-3', name: 'Rotina' },
+      { id: 'cat-4', name: 'Manutenção' },
+      { id: 'cat-5', name: 'Compras' },
+      { id: 'cat-6', name: 'Estamparia' },
+      { id: 'cat-7', name: 'Corte e Dobra' },
+      { id: 'cat-8', name: 'Projeto' },
+      { id: 'cat-9', name: 'Logística' },
+      { id: 'cat-10', name: 'PCP' },
+      { id: 'cat-11', name: 'RH' },
+      { id: 'cat-12', name: 'SAC' },
+      { id: 'cat-13', name: 'TI' },
+      { id: 'cat-14', name: 'Marketing' }
+    ];
+
+    // State object (In-memory reactive store)
+    const AppState = {
+      currentView: 'my-day',
+      displayMode: 'grid',
+      statusFilter: 'all',
+      categoryFilter: 'ALL',
+      priorityFilter: 'ALL',
+      sortBy: 'smart',
+      searchQuery: '',
+      subtasksWidgetTab: 'today',
+      sidebarFiltersOpen: true,
+      sidebarCategoriesOpen: true,
+      allTasksFiltersOpen: false,
+      categories: [...INITIAL_CATEGORIES],
+      activities: [],
+      dailyNotes: {},
+      currentDetailActivityId: null,
+      calendarMonth: new Date().getMonth(),
+      calendarYear: new Date().getFullYear(),
+      selectedCalendarDate: getTodayString()
+    };
+
+    let confirmResolveCallback = null;
+    let noteSaveTimeout = null;
+    let unsubCategories = null;
+    let unsubActivities = null;
+    let unsubNotes = null;
+
+    function showAuthError(message) {
+      const banner = document.getElementById('auth-error-banner');
+      const msg = document.getElementById('auth-error-message');
+      if (banner && msg) {
+        msg.textContent = message;
+        banner.classList.remove('hidden');
+      }
+    }
+
+    function hideAuthError() {
+      const banner = document.getElementById('auth-error-banner');
+      if (banner) banner.classList.add('hidden');
+    }
+
+    function lockAppUI() {
+      const overlay = document.getElementById('auth-gate-overlay');
+      if (overlay) overlay.classList.remove('hidden');
+      document.getElementById('cloud-status-text').textContent = 'Acesso Bloqueado';
+      document.getElementById('cloud-status-dot').className = 'w-2 h-2 rounded-full bg-rose-500';
+      document.getElementById('cloud-user-id').textContent = 'Não autenticado';
+      
+      // Cancel active listeners if logged out
+      if (unsubCategories) unsubCategories();
+      if (unsubActivities) unsubActivities();
+      if (unsubNotes) unsubNotes();
+      
+      AppState.activities = [];
+      AppState.dailyNotes = {};
+      refreshAppViews();
+    }
+
+    function unlockAppUI(user) {
+      const overlay = document.getElementById('auth-gate-overlay');
+      if (overlay) overlay.classList.add('hidden');
+      hideAuthError();
+      document.getElementById('cloud-status-text').textContent = 'Salvo na Nuvem';
+      document.getElementById('cloud-status-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
+      document.getElementById('cloud-user-id').textContent = user.email;
+      document.getElementById('cloud-user-id').title = `E-mail autorizado: ${user.email} (UID: ${user.uid})`;
+      showToast(`Bem-vindo, ${user.displayName || user.email}!`);
+    }
+
+    async function handleGoogleLogin() {
+      hideAuthError();
+      const btnText = document.getElementById('btn-login-text');
+      btnText.textContent = 'Autenticando...';
+
+      try {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        const result = await signInWithPopup(auth, provider);
+        const email = (result.user?.email || '').trim().toLowerCase();
+
+        if (email !== ALLOWED_EMAIL.toLowerCase()) {
+          await signOut(auth);
+          showAuthError(`Acesso negado para o e-mail: ${result.user?.email || 'Desconhecido'}. Este sistema é exclusivo de ${ALLOWED_EMAIL}.`);
+          btnText.textContent = 'Entrar com Conta Google';
+          return;
+        }
+
+        btnText.textContent = 'Entrar com Conta Google';
+      } catch (err) {
+        console.error("Erro no login Google:", err);
+        btnText.textContent = 'Entrar com Conta Google';
+        if (err.code === 'auth/popup-blocked') {
+          showAuthError('O popup de login foi bloqueado pelo seu navegador. Por favor, permita popups para este site.');
+        } else if (err.code === 'auth/popup-closed-by-user') {
+          showAuthError('Janela de login fechada antes da confirmação.');
+        } else {
+          showAuthError('Falha ao autenticar com o Google: ' + (err.message || 'Tente novamente.'));
+        }
+      }
+    }
+
+    async function handleLogout() {
+      if (!auth) return;
+      openConfirmModal(
+        'Sair da Conta',
+        'Deseja realmente desconectar da sua conta Google?',
+        async () => {
+          await signOut(auth);
+          showToast('Desconectado com sucesso.');
+        }
+      );
+    }
+
+    async function saveActivityCloud(activity) {
+      if (!isCloudReady || !currentUser || !db) return false;
+      try {
+        const activityDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'activities', activity.id);
+        await setDoc(activityDocRef, activity);
+        return true;
+      } catch (err) {
+        console.error("Erro ao salvar atividade na nuvem:", err);
+        return false;
+      }
+    }
+
+    async function deleteActivityCloud(activityId) {
+      if (!isCloudReady || !currentUser || !db) return false;
+      try {
+        const activityDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'activities', activityId);
+        await deleteDoc(activityDocRef);
+        return true;
+      } catch (err) {
+        console.error("Erro ao excluir atividade na nuvem:", err);
+        return false;
+      }
+    }
+
+    async function saveNoteCloud(dateStr, noteData) {
+      if (!isCloudReady || !currentUser || !db) return false;
+      try {
+        const noteDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'dailyNotes', dateStr);
+        await setDoc(noteDocRef, noteData);
+        return true;
+      } catch (err) {
+        console.error("Erro ao salvar anotação na nuvem:", err);
+        return false;
+      }
+    }
+
+    async function deleteNoteCloud(dateStr) {
+      if (!isCloudReady || !currentUser || !db) return false;
+      try {
+        const noteDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'dailyNotes', dateStr);
+        await deleteDoc(noteDocRef);
+        return true;
+      } catch (err) {
+        console.error("Erro ao excluir anotação na nuvem:", err);
+        return false;
+      }
+    }
+
+    async function saveCategoryCloud(category) {
+      if (!isCloudReady || !currentUser || !db) return false;
+      try {
+        const catDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', category.id);
+        await setDoc(catDocRef, category);
+        return true;
+      } catch (err) {
+        console.error("Erro ao salvar categoria na nuvem:", err);
+        return false;
+      }
+    }
+
+    async function deleteCategoryCloud(categoryId) {
+      if (!isCloudReady || !currentUser || !db) return false;
+      try {
+        const catDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', categoryId);
+        await deleteDoc(catDocRef);
+        return true;
+      } catch (err) {
+        console.error("Erro ao excluir categoria na nuvem:", err);
+        return false;
+      }
+    }
+
+    function startFirestoreSync() {
+      // 1. Synchronize Categories (Rule 1 & Rule 2)
+      const catCol = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
+      unsubCategories = onSnapshot(catCol, async (snapshot) => {
+        if (snapshot.empty) {
+          for (const cat of INITIAL_CATEGORIES) {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id), cat);
+          }
+        } else {
+          const list = [];
+          snapshot.forEach(d => list.push(d.data()));
+          AppState.categories = list;
+          renderCategories();
+        }
+      }, (err) => console.error("Erro ao sincronizar categorias:", err));
+
+      // 2. Synchronize Activities (Rule 1 & Rule 2)
+      const actCol = collection(db, 'artifacts', appId, 'public', 'data', 'activities');
+      unsubActivities = onSnapshot(actCol, (snapshot) => {
+        const list = [];
+        snapshot.forEach(d => list.push(d.data()));
+        AppState.activities = list;
+        refreshAppViews();
+      }, (err) => console.error("Erro ao sincronizar atividades:", err));
+
+      // 3. Synchronize Daily Notes (Rule 1 & Rule 2)
+      const notesCol = collection(db, 'artifacts', appId, 'public', 'data', 'dailyNotes');
+      unsubNotes = onSnapshot(notesCol, (snapshot) => {
+        const notesMap = {};
+        snapshot.forEach(d => {
+          notesMap[d.id] = d.data();
+        });
+        AppState.dailyNotes = notesMap;
+        refreshAppViews();
+      }, (err) => console.error("Erro ao sincronizar anotações:", err));
+    }
+
+    async function initCloudSync() {
+      try {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        // Monitor de autenticação Google em tempo real
+        onAuthStateChanged(auth, async (user) => {
+          if (user && user.email) {
+            const email = user.email.trim().toLowerCase();
+            if (email === ALLOWED_EMAIL.toLowerCase()) {
+              currentUser = user;
+              currentUserId = user.uid;
+              isCloudReady = true;
+              unlockAppUI(user);
+              startFirestoreSync();
+            } else {
+              // Conta incorreta: desloga imediatamente
+              await signOut(auth);
+              showAuthError(`Acesso bloqueado: o e-mail ${user.email} não possui autorização. O sistema é exclusivo de ${ALLOWED_EMAIL}.`);
+              lockAppUI();
+            }
+          } else {
+            lockAppUI();
+          }
+        });
+
+      } catch (err) {
+        console.error("Falha ao inicializar autenticação:", err);
+        document.getElementById('cloud-status-text').textContent = 'Erro de Conexão';
+        document.getElementById('cloud-status-dot').className = 'w-2 h-2 rounded-full bg-rose-500';
+      }
+    }
+
+    function getTodayString() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDateTimeBR(dateIsoString) {
+      if (!dateIsoString) return '--';
+      try {
+        const d = new Date(dateIsoString);
+        return d.toLocaleDateString('pt-BR', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+      } catch (e) {
+        return dateIsoString;
+      }
+    }
+
+    function formatDateBR(dateString) {
+      if (!dateString) return 'Sem prazo';
+      const parts = dateString.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return dateString;
+    }
+
+    function isOverdue(activity) {
+      if (activity.status === 'Concluída' || !activity.dueDate || activity.archived) return false;
+      const today = getTodayString();
+      return activity.dueDate < today;
+    }
+
+    function isDueToday(activity) {
+      if (activity.archived) return false;
+      return activity.dueDate === getTodayString();
+    }
+
+    function isCompletedToday(activity) {
+      if (activity.status !== 'Concluída' || !activity.completedAt) return false;
+      const completionDay = activity.completedAt.split('T')[0];
+      return completionDay === getTodayString();
+    }
+
+    function getPriorityBadgeClass(priority, isDone = false) {
+      if (isDone) {
+        return 'bg-slate-100/80 text-slate-400 border border-slate-200/60 font-medium';
+      }
+      switch (priority) {
+        case 'Urgente':
+          return 'bg-rose-50 text-rose-700 border border-rose-200 font-semibold';
+        case 'Alta':
+          return 'bg-orange-50 text-orange-700 border border-orange-200 font-semibold';
+        case 'Média':
+          return 'bg-sky-50 text-sky-700 border border-sky-200 font-medium';
+        case 'Baixa':
+          return 'bg-slate-100 text-slate-600 border border-slate-200 font-medium';
+        default:
+          return 'bg-slate-100 text-slate-600 border border-slate-200 font-medium';
+      }
+    }
+
+    function calculateSmartScore(activity) {
+      if (activity.status === 'Concluída') return 999999;
+      let score = 0;
+      const today = getTodayString();
+
+      if (activity.priority === 'Urgente') score -= 10000;
+      else if (activity.priority === 'Alta') score -= 5000;
+      else if (activity.priority === 'Média') score -= 2000;
+      else score -= 500;
+
+      if (isOverdue(activity)) {
+        score -= 8000;
+        if (activity.dueDate) {
+          const diffDays = Math.floor((new Date(today) - new Date(activity.dueDate)) / (1000 * 60 * 60 * 24));
+          score -= Math.min(diffDays * 200, 3000);
+        }
+      } else if (activity.dueDate === today) {
+        score -= 4000;
+      }
+
+      if (activity.status === 'Em andamento') {
+        score -= 1500;
+      }
+
+      if (activity.dueDate) {
+        const timeDiff = new Date(activity.dueDate).getTime();
+        score += (timeDiff / 1000000000);
+      } else {
+        score += 5000;
+      }
+
+      return score;
+    }
+
+    function sortActivities(list, criteria) {
+      const cloned = [...list];
+      switch (criteria) {
+        case 'smart':
+          return cloned.sort((a, b) => calculateSmartScore(a) - calculateSmartScore(b));
+        case 'deadline_asc':
+          return cloned.sort((a, b) => {
+            if (!a.dueDate) return 1;
+            if (!b.dueDate) return -1;
+            return a.dueDate.localeCompare(b.dueDate);
+          });
+        case 'overdue_first':
+          return cloned.sort((a, b) => {
+            const overA = isOverdue(a);
+            const overB = isOverdue(b);
+            if (overA && !overB) return -1;
+            if (!overA && overB) return 1;
+            return (a.dueDate || '').localeCompare(b.dueDate || '');
+          });
+        case 'priority_desc': {
+          const pOrder = { 'Urgente': 4, 'Alta': 3, 'Média': 2, 'Baixa': 1 };
+          return cloned.sort((a, b) => (pOrder[b.priority] || 0) - (pOrder[a.priority] || 0));
+        }
+        case 'created_desc':
+          return cloned.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        case 'created_asc':
+          return cloned.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        case 'alpha_asc':
+          return cloned.sort((a, b) => a.title.localeCompare(b.title));
+        default:
+          return cloned;
+      }
+    }
+
+    function getFilteredActivities(includeArchived = false) {
+      return AppState.activities.filter(act => {
+        if (includeArchived) {
+          if (!act.archived) return false;
+        } else {
+          if (act.archived) return false;
+        }
+
+        if (AppState.statusFilter === 'pending' && act.status !== 'Pendente') return false;
+        if (AppState.statusFilter === 'in_progress' && act.status !== 'Em andamento') return false;
+        if (AppState.statusFilter === 'completed' && act.status !== 'Concluída') return false;
+        if (AppState.statusFilter === 'overdue' && !isOverdue(act)) return false;
+        if (AppState.statusFilter === 'no_due' && (act.dueDate || act.status === 'Concluída')) return false;
+        if (AppState.statusFilter === 'recent') {
+          const threeDaysAgo = Date.now() - (86400000 * 3);
+          if (new Date(act.createdAt).getTime() < threeDaysAgo) return false;
+        }
+
+        if (AppState.categoryFilter !== 'ALL' && act.category !== AppState.categoryFilter) {
+          return false;
+        }
+
+        if (AppState.priorityFilter !== 'ALL' && act.priority !== AppState.priorityFilter) {
+          return false;
+        }
+
+        if (AppState.searchQuery.trim()) {
+          const q = AppState.searchQuery.toLowerCase();
+          const matchTitle = act.title.toLowerCase().includes(q);
+          const matchDesc = (act.description || '').toLowerCase().includes(q);
+          const matchCat = act.category.toLowerCase().includes(q);
+          const matchCode = act.id.toLowerCase().includes(q);
+          const matchTags = (act.tags || []).some(t => t.toLowerCase().includes(q));
+          if (!matchTitle && !matchDesc && !matchCat && !matchCode && !matchTags) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function updateCountersAndBadges() {
+      const activeActs = AppState.activities.filter(a => !a.archived);
+      const today = getTodayString();
+
+      const total = activeActs.length;
+      const pending = activeActs.filter(a => a.status === 'Pendente').length;
+      const progress = activeActs.filter(a => a.status === 'Em andamento').length;
+      const completed = activeActs.filter(a => a.status === 'Concluída').length;
+      const overdue = activeActs.filter(a => isOverdue(a)).length;
+      const noDue = activeActs.filter(a => !a.dueDate && a.status !== 'Concluída').length;
+      const recent = activeActs.filter(a => (Date.now() - new Date(a.createdAt).getTime()) < 86400000 * 3).length;
+      const archived = AppState.activities.filter(a => a.archived).length;
+      const notesCount = Object.keys(AppState.dailyNotes).length;
+
+      const plannedToday = activeActs.filter(a => a.dueDate === today);
+      const plannedTodayDone = plannedToday.filter(a => a.status === 'Concluída');
+      const doneToday = activeActs.filter(a => isCompletedToday(a));
+
+      document.getElementById('badge-my-day-count').textContent = plannedToday.length;
+      document.getElementById('badge-all-count').textContent = total;
+      document.getElementById('badge-notes-count').textContent = notesCount;
+      document.getElementById('badge-history-count').textContent = completed;
+      document.getElementById('badge-archived-count').textContent = archived;
+
+      document.getElementById('count-filter-all').textContent = total;
+      document.getElementById('count-filter-pending').textContent = pending;
+      document.getElementById('count-filter-progress').textContent = progress;
+      document.getElementById('count-filter-completed').textContent = completed;
+      document.getElementById('count-filter-overdue').textContent = overdue;
+      document.getElementById('count-filter-no_due').textContent = noDue;
+      document.getElementById('count-filter-recent').textContent = recent;
+
+      document.getElementById('kpi-today-count').textContent = plannedToday.length;
+      document.getElementById('kpi-overdue-count').textContent = overdue;
+      document.getElementById('kpi-progress-count').textContent = progress;
+      document.getElementById('kpi-done-today-count').textContent = doneToday.length;
+
+      let percent = 0;
+      if (plannedToday.length > 0) {
+        percent = Math.round((plannedTodayDone.length / plannedToday.length) * 100);
+        document.getElementById('daily-progress-text').textContent = `${percent}%`;
+        document.getElementById('daily-progress-subtext').textContent = `${plannedTodayDone.length} de ${plannedToday.length} atividades previstas concluídas`;
+      } else {
+        document.getElementById('daily-progress-text').textContent = 'N/A';
+        document.getElementById('daily-progress-subtext').textContent = 'Nenhuma atividade programada para hoje';
+      }
+      document.getElementById('daily-progress-bar').style.width = `${percent}%`;
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('system-time-display').textContent = `${timeStr} (Brasília)`;
+    }
+
+    function renderCategories() {
+      const container = document.getElementById('sidebar-categories-list');
+      const selectCatForm = document.getElementById('form-category');
+      const selectCatFilter = document.getElementById('filter-select-category');
+      const settingsTable = document.getElementById('settings-categories-table');
+
+      container.innerHTML = '';
+      selectCatForm.innerHTML = '';
+      selectCatFilter.innerHTML = '<option value="ALL">Todas as Categorias</option>';
+      if (settingsTable) settingsTable.innerHTML = '';
+
+      AppState.categories.forEach(cat => {
+        const catTasksCount = AppState.activities.filter(a => !a.archived && a.category === cat.name).length;
+
+        const catBtn = document.createElement('button');
+        const isActive = AppState.categoryFilter === cat.name;
+        catBtn.className = `w-full flex items-center justify-between px-3 py-1.5 text-xs rounded-lg transition ${isActive ? 'bg-slate-200/80 text-slate-900 font-semibold' : 'text-slate-600 hover:bg-slate-100'}`;
+        catBtn.onclick = () => setCategoryFilter(cat.name);
+        catBtn.innerHTML = `
+          <span class="truncate">${cat.name}</span>
+          <span class="text-[10px] text-slate-400 font-medium">${catTasksCount}</span>
+        `;
+        container.appendChild(catBtn);
+
+        const opt = document.createElement('option');
+        opt.value = cat.name;
+        opt.textContent = cat.name;
+        selectCatForm.appendChild(opt);
+
+        const optFilter = document.createElement('option');
+        optFilter.value = cat.name;
+        optFilter.textContent = `${cat.name} (${catTasksCount})`;
+        if (AppState.categoryFilter === cat.name) optFilter.selected = true;
+        selectCatFilter.appendChild(optFilter);
+
+        if (settingsTable) {
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs';
+          row.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-slate-800">${cat.name}</span>
+              <span class="text-[10px] text-slate-400">(${catTasksCount} atividades associadas)</span>
+            </div>
+            <button onclick="confirmDeleteCategory('${cat.id}')" class="text-slate-400 hover:text-rose-600" title="Excluir Categoria">
+              <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+            </button>
+          `;
+          settingsTable.appendChild(row);
+        }
+      });
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function createActivityCardHTML(activity) {
+      const isDone = activity.status === 'Concluída';
+      const overdue = isOverdue(activity);
+      
+      const totalSubs = (activity.subtasks || []).length;
+      const doneSubs = (activity.subtasks || []).filter(s => s.status === 'done').length;
+      const subtaskPercent = totalSubs > 0 ? Math.round((doneSubs / totalSubs) * 100) : 0;
+
+      const priorityClass = getPriorityBadgeClass(activity.priority, isDone);
+
+      let statusClass = 'bg-amber-50 text-amber-700 border-amber-200';
+      if (activity.status === 'Em andamento') statusClass = 'bg-blue-50 text-blue-700 border-blue-200';
+      if (isDone) statusClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+
+      let cardStyle = 'bg-white border-slate-200/90 hover:border-slate-300 hover:shadow-md';
+      if (isDone) {
+        cardStyle = 'bg-slate-50/70 border-slate-200/60 opacity-60 hover:opacity-100 hover:bg-white hover:border-slate-300 shadow-none';
+      } else if (overdue) {
+        cardStyle = 'bg-white border-rose-300 shadow-rose-100/50 hover:border-rose-400 hover:shadow-md';
+      }
+
+      return `
+        <div onclick="openActivityDetails('${activity.id}')" class="group rounded-xl border transition-all duration-200 p-4 cursor-pointer relative flex flex-col justify-between ${cardStyle}">
+          <div>
+            <div class="flex items-center justify-between gap-1.5 mb-2.5">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded ${isDone ? 'bg-slate-100/80 text-slate-400' : 'bg-slate-100 text-slate-600'}">${activity.id}</span>
+                <span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/70 ${isDone ? 'opacity-70' : ''}">
+                  ${activity.category}
+                </span>
+                <span class="text-[10px] px-2 py-0.5 rounded-md border ${priorityClass}">
+                  ${activity.priority}
+                </span>
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusClass}">
+                ${activity.status}
+              </span>
+            </div>
+
+            <h4 class="text-xs leading-snug transition line-clamp-2 ${isDone ? 'line-through text-slate-400 font-medium' : 'font-bold text-slate-900 group-hover:text-brand-600'}">
+              ${activity.title}
+            </h4>
+
+            <div class="flex items-center gap-2 mt-2.5 text-[11px]">
+              <span class="flex items-center gap-1 ${isDone ? 'text-slate-400' : overdue ? 'text-rose-600 font-bold' : 'text-slate-500'}">
+                <i data-lucide="calendar" class="w-3 h-3"></i>
+                <span>${activity.dueDate ? formatDateBR(activity.dueDate) : 'Sem prazo'}</span>
+              </span>
+              ${!isDone && overdue ? '<span class="text-[10px] bg-rose-50 text-rose-600 px-1.5 rounded font-bold">Atrasada</span>' : ''}
+              ${activity.originNoteDate ? '<span title="Criada a partir de anotação diária" class="text-slate-400"><i data-lucide="link" class="w-3 h-3"></i></span>' : ''}
+            </div>
+
+            ${totalSubs > 0 ? `
+              <div class="mt-3 pt-2.5 border-t border-slate-100">
+                <div class="flex justify-between items-center text-[10px] text-slate-500 mb-1">
+                  <span>Subtarefas</span>
+                  <span class="font-medium">${doneSubs}/${totalSubs} (${subtaskPercent}%)</span>
+                </div>
+                <div class="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
+                  <div class="${isDone ? 'bg-slate-400' : 'bg-slate-700'} h-full rounded-full" style="width: ${subtaskPercent}%"></div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-slate-400" onclick="event.stopPropagation()">
+            <span class="text-[10px] text-slate-400 font-medium">Criada: ${formatDateBR(activity.createdAt.split('T')[0])}</span>
+            <div class="flex items-center gap-1">
+              ${!isDone ? `
+                <button onclick="toggleActivityComplete('${activity.id}')" title="Marcar como Concluída" class="p-1 hover:text-emerald-600 hover:bg-emerald-50 rounded">
+                  <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                </button>
+              ` : `
+                <button onclick="reopenActivity('${activity.id}')" title="Reabrir Atividade" class="p-1 hover:text-amber-600 hover:bg-amber-50 rounded">
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                </button>
+              `}
+              <button onclick="editActivityDirect('${activity.id}')" title="Editar" class="p-1 hover:text-slate-700 hover:bg-slate-100 rounded">
+                <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="duplicateActivity('${activity.id}')" title="Duplicar" class="p-1 hover:text-slate-700 hover:bg-slate-100 rounded">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMyDayView() {
+      const activeActs = AppState.activities.filter(a => !a.archived);
+      const today = getTodayString();
+
+      const urgentActs = activeActs.filter(a => a.status !== 'Concluída' && (a.priority === 'Urgente' || a.priority === 'Alta'));
+      const todayActs = activeActs.filter(a => a.dueDate === today);
+      const overdueActs = activeActs.filter(a => isOverdue(a));
+      const inProgressActs = activeActs.filter(a => a.status === 'Em andamento');
+      const doneTodayActs = activeActs.filter(a => isCompletedToday(a));
+
+      document.getElementById('badge-section-urgent').textContent = urgentActs.length;
+      document.getElementById('badge-section-today').textContent = todayActs.length;
+      document.getElementById('badge-section-overdue').textContent = overdueActs.length;
+      document.getElementById('badge-section-progress').textContent = inProgressActs.length;
+      document.getElementById('badge-section-done').textContent = doneTodayActs.length;
+
+      renderMyDaySubtasksWidget();
+
+      renderSectionCards('section-urgent-body', sortActivities(urgentActs, 'smart'), 'Nenhuma prioridade urgente ou alta pendente.');
+      renderSectionCards('section-today-body', sortActivities(todayActs, 'smart'), 'Nenhuma atividade programada para hoje.');
+      renderSectionCards('section-overdue-body', sortActivities(overdueActs, 'overdue_first'), 'Nenhuma atividade atrasada.');
+      renderSectionCards('section-progress-body', sortActivities(inProgressActs, 'smart'), 'Nenhuma atividade em andamento no momento.');
+      renderSectionCards('section-done-body', doneTodayActs, 'Nenhuma atividade foi finalizada hoje ainda.');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function setSubtasksWidgetTab(tab) {
+      AppState.subtasksWidgetTab = tab;
+      
+      const tabToday = document.getElementById('tab-subtasks-today');
+      const tabWeek = document.getElementById('tab-subtasks-week');
+      const tabAll = document.getElementById('tab-subtasks-all');
+
+      [tabToday, tabWeek, tabAll].forEach(t => {
+        t.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-slate-500 hover:text-slate-800 transition flex items-center gap-1.5';
+      });
+
+      if (tab === 'today') {
+        tabToday.className = 'px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-slate-800 shadow-2xs transition flex items-center gap-1.5';
+      } else if (tab === 'week') {
+        tabWeek.className = 'px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-slate-800 shadow-2xs transition flex items-center gap-1.5';
+      } else {
+        tabAll.className = 'px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-slate-800 shadow-2xs transition flex items-center gap-1.5';
+      }
+
+      renderMyDaySubtasksWidget();
+    }
+
+    function renderMyDaySubtasksWidget() {
+      const today = getTodayString();
+      const in7DaysDate = new Date();
+      in7DaysDate.setDate(in7DaysDate.getDate() + 7);
+      const in7Days = in7DaysDate.toISOString().split('T')[0];
+
+      const activeActs = AppState.activities.filter(a => !a.archived);
+
+      const allSubtasks = [];
+      activeActs.forEach(act => {
+        (act.subtasks || []).forEach(sub => {
+          allSubtasks.push({
+            ...sub,
+            activityId: act.id,
+            activityTitle: act.title,
+            activityCategory: act.category,
+            activityPriority: act.priority,
+            activityStatus: act.status
+          });
+        });
+      });
+
+      const todayList = allSubtasks.filter(s => s.dueDate && s.dueDate <= today && s.status !== 'done');
+      const weekList = allSubtasks.filter(s => s.dueDate && s.dueDate >= today && s.dueDate <= in7Days && s.status !== 'done');
+      const allPendingList = allSubtasks.filter(s => s.status !== 'done');
+
+      document.getElementById('badge-subtasks-today').textContent = todayList.length;
+      document.getElementById('badge-subtasks-week').textContent = weekList.length;
+      document.getElementById('badge-subtasks-all').textContent = allPendingList.length;
+      document.getElementById('badge-subtasks-total-count').textContent = todayList.length + weekList.length;
+
+      let displayList = [];
+      if (AppState.subtasksWidgetTab === 'today') {
+        displayList = allSubtasks.filter(s => s.dueDate && s.dueDate <= today);
+      } else if (AppState.subtasksWidgetTab === 'week') {
+        displayList = allSubtasks.filter(s => s.dueDate && s.dueDate >= today && s.dueDate <= in7Days);
+      } else {
+        displayList = allPendingList;
+      }
+
+      displayList.sort((a, b) => {
+        if (a.status !== b.status) return a.status === 'done' ? 1 : -1;
+        return (a.dueDate || '9999').localeCompare(b.dueDate || '9999');
+      });
+
+      const container = document.getElementById('my-day-subtasks-list');
+      if (displayList.length === 0) {
+        container.innerHTML = `
+          <div class="py-6 text-center text-xs text-slate-400">
+            <i data-lucide="check-circle" class="w-6 h-6 mx-auto text-slate-300 mb-1.5"></i>
+            <span>Nenhuma subtarefa encontrada para este período.</span>
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = displayList.map(sub => {
+        const isDone = sub.status === 'done';
+        const isSubOverdue = !isDone && sub.dueDate && sub.dueDate < today;
+        const isDueToday = !isDone && sub.dueDate === today;
+
+        let dateBadgeClass = 'bg-slate-100 text-slate-600 border border-slate-200';
+        let dateLabel = sub.dueDate ? formatDateBR(sub.dueDate) : 'Sem prazo';
+
+        if (isDone) {
+          dateBadgeClass = 'bg-slate-100/70 text-slate-400 border border-slate-200/50';
+          dateLabel = 'Concluída';
+        } else if (isSubOverdue) {
+          dateBadgeClass = 'bg-rose-50 text-rose-700 border border-rose-200 font-semibold';
+          dateLabel = `Atrasada (${formatDateBR(sub.dueDate)})`;
+        } else if (isDueToday) {
+          dateBadgeClass = 'bg-amber-50 text-amber-800 border border-amber-200 font-semibold';
+          dateLabel = 'Vence Hoje';
+        }
+
+        return `
+          <div onclick="openActivityDetails('${sub.activityId}')" class="py-2.5 px-3 rounded-lg hover:bg-slate-50 flex items-center justify-between gap-3 cursor-pointer transition group select-none ${isDone ? 'opacity-50' : ''}">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <input 
+                type="checkbox" 
+                onclick="event.stopPropagation()" 
+                onchange="toggleSubtaskFromWidget('${sub.activityId}', '${sub.id}')" 
+                ${isDone ? 'checked' : ''} 
+                title="${isDone ? 'Marcar como pendente' : 'Marcar subtarefa como concluída'}"
+                class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 cursor-pointer flex-shrink-0"
+              />
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-semibold transition truncate ${isDone ? 'line-through text-slate-400' : 'text-slate-800 group-hover:text-brand-600'}">
+                  ${sub.title}
+                </div>
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5 truncate">
+                  <span class="font-mono font-bold text-slate-500">${sub.activityId}</span>
+                  <span>•</span>
+                  <span class="truncate max-w-[200px] sm:max-w-sm text-slate-600 font-medium">${sub.activityTitle}</span>
+                  <span>•</span>
+                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">${sub.activityCategory}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span class="text-[10px] px-2 py-0.5 rounded-md ${dateBadgeClass}">
+                ${dateLabel}
+              </span>
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-600 transition" title="Abrir card da atividade"></i>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function toggleSubtaskFromWidget(activityId, subtaskId) {
+      toggleSubtask(activityId, subtaskId);
+      renderMyDaySubtasksWidget();
+    }
+
+    function renderSectionCards(containerId, list, emptyMsg) {
+      const container = document.getElementById(containerId);
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-4 text-center text-xs text-slate-400 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+            ${emptyMsg}
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = list.map(createActivityCardHTML).join('');
+    }
+
+    function renderAllTasksView() {
+      const filtered = getFilteredActivities(false);
+      const sorted = sortActivities(filtered, AppState.sortBy);
+
+      const gridContainer = document.getElementById('tasks-grid-container');
+      const listContainer = document.getElementById('tasks-list-container');
+      const tableBody = document.getElementById('tasks-table-body');
+      const emptyState = document.getElementById('tasks-empty-state');
+      const filterIndicator = document.getElementById('active-filter-indicator');
+
+      const hasActiveFilters = AppState.categoryFilter !== 'ALL' || AppState.priorityFilter !== 'ALL' || AppState.statusFilter !== 'all' || AppState.sortBy !== 'smart';
+      if (filterIndicator) {
+        filterIndicator.classList.toggle('hidden', !hasActiveFilters);
+      }
+
+      if (sorted.length === 0) {
+        gridContainer.classList.add('hidden');
+        listContainer.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      if (AppState.displayMode === 'grid') {
+        gridContainer.classList.remove('hidden');
+        listContainer.classList.add('hidden');
+        gridContainer.innerHTML = sorted.map(createActivityCardHTML).join('');
+      } else {
+        gridContainer.classList.add('hidden');
+        listContainer.classList.remove('hidden');
+
+        tableBody.innerHTML = sorted.map(act => {
+          const isDone = act.status === 'Concluída';
+          const overdue = isOverdue(act);
+          const totalSubs = (act.subtasks || []).length;
+          const doneSubs = (act.subtasks || []).filter(s => s.status === 'done').length;
+
+          return `
+            <tr onclick="openActivityDetails('${act.id}')" class="${isDone ? 'opacity-60 bg-slate-50/70 hover:opacity-100' : 'hover:bg-slate-50'} cursor-pointer transition">
+              <td class="py-2.5 px-4">
+                <span class="inline-block w-2.5 h-2.5 rounded-full ${isDone ? 'bg-emerald-500' : act.status === 'Em andamento' ? 'bg-blue-600' : 'bg-amber-500'}"></span>
+              </td>
+              <td class="py-2.5 px-4">
+                <div class="${isDone ? 'line-through text-slate-400 font-medium' : 'font-bold text-slate-900'}">${act.title}</div>
+                <span class="font-mono text-[10px] text-slate-400">${act.id}</span>
+              </td>
+              <td class="py-2.5 px-4">
+                <span class="text-[10px] px-2 py-0.5 rounded font-medium bg-slate-100 text-slate-600 border border-slate-200 ${isDone ? 'opacity-70' : ''}">
+                  ${act.category}
+                </span>
+              </td>
+              <td class="py-2.5 px-4">
+                <span class="text-[10px] px-2 py-0.5 rounded-md border ${getPriorityBadgeClass(act.priority, isDone)}">
+                  ${act.priority}
+                </span>
+              </td>
+              <td class="py-2.5 px-4">
+                <span class="${isDone ? 'text-slate-400' : overdue ? 'text-rose-600 font-bold' : 'text-slate-600'}">
+                  ${act.dueDate ? formatDateBR(act.dueDate) : 'Sem prazo'}
+                  ${!isDone && overdue ? ' (Atrasada)' : ''}
+                </span>
+              </td>
+              <td class="py-2.5 px-4 text-slate-500">
+                ${totalSubs > 0 ? `${doneSubs}/${totalSubs}` : '-'}
+              </td>
+              <td class="py-2.5 px-4 text-right" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-end gap-1">
+                  ${!isDone ? `
+                    <button onclick="toggleActivityComplete('${act.id}')" class="p-1 text-slate-400 hover:text-emerald-600" title="Concluir">
+                      <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                    </button>
+                  ` : `
+                    <button onclick="reopenActivity('${act.id}')" class="p-1 text-slate-400 hover:text-amber-600" title="Reabrir">
+                      <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    </button>
+                  `}
+                  <button onclick="editActivityDirect('${act.id}')" class="p-1 text-slate-400 hover:text-slate-700" title="Editar">
+                    <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderCalendarView() {
+      const year = AppState.calendarYear;
+      const month = AppState.calendarMonth;
+
+      const monthNames = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
+      document.getElementById('calendar-month-year-title').textContent = `${monthNames[month]} ${year}`;
+
+      const grid = document.getElementById('calendar-days-grid');
+      grid.innerHTML = '';
+
+      const firstDayIndex = new Date(year, month, 1).getDay();
+      const totalDays = new Date(year, month + 1, 0).getDate();
+      const prevMonthTotalDays = new Date(year, month, 0).getDate();
+
+      const todayStr = getTodayString();
+
+      // Leading days from previous month
+      for (let i = firstDayIndex - 1; i >= 0; i--) {
+        const dayNum = prevMonthTotalDays - i;
+        const cell = document.createElement('div');
+        cell.className = 'h-20 p-1.5 rounded-lg border border-slate-100 bg-slate-50/40 text-slate-300 text-xs select-none';
+        cell.innerHTML = `<span>${dayNum}</span>`;
+        grid.appendChild(cell);
+      }
+
+      // Current month days
+      for (let day = 1; day <= totalDays; day++) {
+        const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const hasNote = !!AppState.dailyNotes[dayStr];
+        const isToday = dayStr === todayStr;
+        const isSelected = dayStr === AppState.selectedCalendarDate;
+
+        const completedCount = AppState.activities.filter(a => a.status === 'Concluída' && a.completedAt && a.completedAt.split('T')[0] === dayStr).length;
+
+        const cell = document.createElement('div');
+        let borderClass = 'border-slate-100 hover:border-brand-300';
+        let bgClass = 'bg-white';
+
+        if (isSelected) {
+          borderClass = 'border-brand-600 ring-2 ring-brand-500/20';
+          bgClass = 'bg-brand-50/20';
+        } else if (isToday) {
+          borderClass = 'border-brand-500';
+        }
+
+        cell.className = `h-20 p-2 rounded-lg border ${borderClass} ${bgClass} transition flex flex-col justify-between cursor-pointer text-xs relative select-none`;
+        cell.title = 'Clique para selecionar • Duplo clique para abrir/editar anotação';
+        cell.onclick = () => selectCalendarDay(dayStr);
+        cell.ondblclick = (e) => {
+          e.preventDefault();
+          selectCalendarDay(dayStr);
+          openNoteModal(dayStr);
+        };
+
+        let notePreview = '';
+        if (hasNote) {
+          const noteObj = AppState.dailyNotes[dayStr];
+          notePreview = noteObj.summary || (noteObj.freeText ? noteObj.freeText.substring(0, 30) + '...' : 'Anotação registrada');
+        }
+
+        cell.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-semibold ${isToday ? 'w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px]' : 'text-slate-700'}">${day}</span>
+            <div class="flex items-center gap-1">
+              ${completedCount > 0 ? `
+                <span class="text-[9px] px-1 rounded-full bg-emerald-100 text-emerald-800 font-bold" title="${completedCount} concluídas neste dia">✓ ${completedCount}</span>
+              ` : ''}
+              ${hasNote ? `
+                <span class="w-2 h-2 rounded-full bg-brand-600" title="Possui anotação diária"></span>
+              ` : ''}
+            </div>
+          </div>
+          <div class="text-[10px] text-slate-500 line-clamp-2 mt-1 leading-tight">
+            ${notePreview}
+          </div>
+        `;
+
+        grid.appendChild(cell);
+      }
+
+      renderSelectedDayPreview();
+      renderRecentNotesFeed();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function selectCalendarDay(dateStr) {
+      AppState.selectedCalendarDate = dateStr;
+      renderCalendarView();
+    }
+
+    function changeCalendarMonth(delta) {
+      AppState.calendarMonth += delta;
+      if (AppState.calendarMonth < 0) {
+        AppState.calendarMonth = 11;
+        AppState.calendarYear--;
+      } else if (AppState.calendarMonth > 11) {
+        AppState.calendarMonth = 0;
+        AppState.calendarYear++;
+      }
+      renderCalendarView();
+    }
+
+    function jumpToCalendarToday() {
+      const now = new Date();
+      AppState.calendarMonth = now.getMonth();
+      AppState.calendarYear = now.getFullYear();
+      AppState.selectedCalendarDate = getTodayString();
+      renderCalendarView();
+    }
+
+    function renderSelectedDayPreview() {
+      const dateStr = AppState.selectedCalendarDate;
+      const note = AppState.dailyNotes[dateStr];
+      const previewContainer = document.getElementById('calendar-selected-note-content');
+      document.getElementById('calendar-selected-date-label').textContent = formatDateBR(dateStr);
+
+      if (!note || (!note.freeText && !note.summary && !note.problems && !note.decisions)) {
+        previewContainer.innerHTML = `
+          <div class="text-center py-6 text-slate-400">
+            <i data-lucide="file-plus" class="w-8 h-8 mx-auto text-slate-300 mb-2"></i>
+            <p class="text-xs">Nenhuma anotação para este dia.</p>
+            <button onclick="openNoteModal('${dateStr}')" class="mt-3 text-xs font-semibold text-brand-600 hover:underline">
+              + Registrar Acontecimentos
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      previewContainer.innerHTML = `
+        ${note.summary ? `
+          <div class="p-2.5 rounded bg-brand-50/50 border border-brand-100 text-xs text-brand-900 font-medium">
+            ${note.summary}
+          </div>
+        ` : ''}
+
+        <div class="text-xs text-slate-700 whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed border border-slate-100 p-2.5 rounded-lg bg-slate-50">
+          ${note.freeText || 'Sem anotação de texto livre.'}
+        </div>
+
+        <div class="pt-2 flex items-center justify-between border-t border-slate-100">
+          <button onclick="openNoteModal('${dateStr}')" class="text-xs font-semibold text-brand-600 hover:underline">
+            Editar Anotação Completa &rarr;
+          </button>
+          <span class="text-[10px] text-slate-400 font-mono">Última edição: ${note.lastSaved ? formatDateTimeBR(note.lastSaved) : '--'}</span>
+        </div>
+      `;
+    }
+
+    function renderRecentNotesFeed() {
+      const container = document.getElementById('recent-notes-list');
+      const dates = Object.keys(AppState.dailyNotes).sort().reverse();
+
+      if (dates.length === 0) {
+        container.innerHTML = '<span class="text-slate-400 text-xs">Nenhuma anotação registrada ainda.</span>';
+        return;
+      }
+
+      container.innerHTML = dates.slice(0, 5).map(d => {
+        const n = AppState.dailyNotes[d];
+        const preview = n.summary || (n.freeText ? n.freeText.substring(0, 45) + '...' : 'Registro diário');
+        return `
+          <div onclick="selectCalendarDay('${d}')" ondblclick="openNoteModal('${d}')" title="Clique para selecionar • Duplo clique para editar" class="p-2 rounded-lg border border-slate-100 hover:border-brand-300 hover:bg-slate-50 cursor-pointer transition select-none">
+            <div class="flex items-center justify-between font-semibold text-slate-800 text-[11px]">
+              <span>${formatDateBR(d)}</span>
+              <span class="text-[10px] text-brand-600 font-normal">Ver</span>
+            </div>
+            <p class="text-[11px] text-slate-500 truncate mt-0.5">${preview}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openActivityDetails(id) {
+      const activity = AppState.activities.find(a => a.id === id);
+      if (!activity) return;
+
+      AppState.currentDetailActivityId = id;
+      const overdue = isOverdue(activity);
+
+      document.getElementById('detail-code-badge').textContent = activity.id;
+      const statusBadge = document.getElementById('detail-status-badge');
+      statusBadge.textContent = activity.status;
+      if (activity.status === 'Concluída') {
+        statusBadge.className = 'text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200';
+      } else if (activity.status === 'Em andamento') {
+        statusBadge.className = 'text-xs px-2 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-800 border border-blue-200';
+      } else {
+        statusBadge.className = 'text-xs px-2 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800 border border-amber-200';
+      }
+
+      document.getElementById('detail-title').textContent = activity.title;
+      const catBadge = document.getElementById('detail-category-badge');
+      catBadge.textContent = activity.category;
+      catBadge.removeAttribute('style');
+      catBadge.className = 'text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200';
+
+      const prioBadge = document.getElementById('detail-priority-badge');
+      prioBadge.textContent = activity.priority;
+      prioBadge.className = `text-[11px] px-2 py-0.5 rounded-md border ${getPriorityBadgeClass(activity.priority, activity.status === 'Concluída')}`;
+
+      const overdueAlert = document.getElementById('detail-overdue-alert');
+      if (overdue) overdueAlert.classList.remove('hidden');
+      else overdueAlert.classList.add('hidden');
+
+      document.getElementById('detail-description').textContent = activity.description || 'Nenhuma descrição detalhada informada.';
+      document.getElementById('detail-start-date').textContent = activity.startDate ? formatDateBR(activity.startDate) : 'Não informado';
+      document.getElementById('detail-due-date').textContent = activity.dueDate ? formatDateBR(activity.dueDate) : 'Não informado';
+      document.getElementById('detail-real-start').textContent = formatDateTimeBR(activity.realStartAt);
+      document.getElementById('detail-real-end').textContent = formatDateTimeBR(activity.completedAt);
+      document.getElementById('detail-observations').textContent = activity.observations || 'Nenhuma observação interna adicional.';
+
+      const noteOriginBox = document.getElementById('detail-note-origin-box');
+      if (activity.originNoteDate) {
+        noteOriginBox.classList.remove('hidden');
+        document.getElementById('detail-note-origin-text').textContent = `Origem no diário do dia ${formatDateBR(activity.originNoteDate)}`;
+        document.getElementById('detail-note-origin-btn').onclick = () => {
+          closeDetailsPanel();
+          setAppView('notes-calendar');
+          selectCalendarDay(activity.originNoteDate);
+          openNoteModal(activity.originNoteDate);
+        };
+      } else {
+        noteOriginBox.classList.add('hidden');
+      }
+
+      const historyContainer = document.getElementById('detail-history-list');
+      if (activity.history && activity.history.length > 0) {
+        historyContainer.innerHTML = activity.history.map(h => `
+          <div class="relative pb-2">
+            <span class="text-[10px] font-mono text-slate-400 block">${formatDateTimeBR(h.timestamp)}</span>
+            <span class="text-xs text-slate-700">${h.action}</span>
+          </div>
+        `).join('');
+      } else {
+        historyContainer.innerHTML = '<span class="text-xs text-slate-400">Sem histórico de alterações.</span>';
+      }
+
+      renderSubtasksInDetails(activity);
+      renderDetailFooterActions(activity);
+
+      const panel = document.getElementById('details-panel');
+      panel.classList.remove('translate-x-full');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeDetailsPanel() {
+      const panel = document.getElementById('details-panel');
+      panel.classList.add('translate-x-full');
+      AppState.currentDetailActivityId = null;
+    }
+
+    function renderSubtasksInDetails(activity) {
+      const subtasks = activity.subtasks || [];
+      const total = subtasks.length;
+      const doneCount = subtasks.filter(s => s.status === 'done').length;
+      const percent = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+      document.getElementById('detail-subtasks-summary').textContent = `${doneCount} de ${total} concluídas (${percent}%)`;
+      const progressWrapper = document.getElementById('detail-subtask-progress-bar-wrapper');
+      const progressBar = document.getElementById('detail-subtask-progress-bar');
+      
+      if (total > 0) {
+        progressWrapper.classList.remove('hidden');
+        progressBar.style.width = `${percent}%`;
+      } else {
+        progressWrapper.classList.add('hidden');
+      }
+
+      const banner = document.getElementById('subtasks-all-done-banner');
+      if (total > 0 && doneCount === total && activity.status !== 'Concluída') {
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      const listContainer = document.getElementById('detail-subtasks-list');
+      if (total === 0) {
+        listContainer.innerHTML = '<div class="text-xs text-slate-400 py-2">Nenhuma subtarefa adicionada.</div>';
+        return;
+      }
+
+      listContainer.innerHTML = subtasks.map(s => `
+        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 hover:bg-slate-100/60 transition group">
+          <label class="flex items-center gap-2.5 cursor-pointer flex-1 min-w-0">
+            <input type="checkbox" onchange="toggleSubtask('${activity.id}', '${s.id}')" ${s.status === 'done' ? 'checked' : ''} class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+            <span class="text-xs ${s.status === 'done' ? 'line-through text-slate-400' : 'text-slate-800'} truncate">${s.title}</span>
+          </label>
+          <div class="flex items-center gap-2 opacity-80 group-hover:opacity-100">
+            ${s.dueDate ? `<span class="text-[10px] text-slate-400">${formatDateBR(s.dueDate)}</span>` : ''}
+            <button onclick="deleteSubtask('${activity.id}', '${s.id}')" class="text-slate-400 hover:text-rose-600 p-1" title="Excluir subtarefa">
+              <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function toggleNewSubtaskForm() {
+      const form = document.getElementById('new-subtask-form');
+      form.classList.toggle('hidden');
+      if (!form.classList.contains('hidden')) {
+        document.getElementById('new-subtask-title').focus();
+      }
+    }
+
+    function saveNewSubtask() {
+      const activityId = AppState.currentDetailActivityId;
+      const activity = AppState.activities.find(a => a.id === activityId);
+      if (!activity) return;
+
+      const titleInput = document.getElementById('new-subtask-title');
+      const dueInput = document.getElementById('new-subtask-due');
+      const title = titleInput.value.trim();
+      if (!title) return;
+
+      if (!activity.subtasks) activity.subtasks = [];
+      const newSub = {
+        id: 'sub-' + Date.now(),
+        title: title,
+        dueDate: dueInput.value || null,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      activity.subtasks.push(newSub);
+      activity.history.push({
+        timestamp: new Date().toISOString(),
+        action: `Subtarefa adicionada: "${title}"`
+      });
+
+      titleInput.value = '';
+      dueInput.value = '';
+      toggleNewSubtaskForm();
+
+      saveActivityCloud(activity);
+      renderSubtasksInDetails(activity);
+      refreshAppViews();
+      showToast('Subtarefa adicionada e salva!');
+    }
+
+    function toggleSubtask(activityId, subtaskId) {
+      const activity = AppState.activities.find(a => a.id === activityId);
+      if (!activity) return;
+
+      const sub = activity.subtasks.find(s => s.id === subtaskId);
+      if (!sub) return;
+
+      sub.status = sub.status === 'done' ? 'pending' : 'done';
+      sub.completedAt = sub.status === 'done' ? new Date().toISOString() : null;
+
+      activity.history.push({
+        timestamp: new Date().toISOString(),
+        action: `Subtarefa "${sub.title}" marcada como ${sub.status === 'done' ? 'Concluída' : 'Pendente'}`
+      });
+
+      saveActivityCloud(activity);
+      renderSubtasksInDetails(activity);
+      refreshAppViews();
+    }
+
+    function deleteSubtask(activityId, subtaskId) {
+      const activity = AppState.activities.find(a => a.id === activityId);
+      if (!activity) return;
+
+      activity.subtasks = activity.subtasks.filter(s => s.id !== subtaskId);
+      activity.history.push({
+        timestamp: new Date().toISOString(),
+        action: 'Subtarefa removida'
+      });
+
+      saveActivityCloud(activity);
+      renderSubtasksInDetails(activity);
+      refreshAppViews();
+      showToast('Subtarefa removida');
+    }
+
+    function confirmCompleteFromSubtasks() {
+      const id = AppState.currentDetailActivityId;
+      if (id) {
+        toggleActivityComplete(id);
+      }
+    }
+
+    function renderDetailFooterActions(activity) {
+      const container = document.getElementById('detail-quick-actions');
+      if (activity.status === 'Pendente') {
+        container.innerHTML = `
+          <button onclick="startActivity('${activity.id}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-sm flex items-center justify-center gap-1.5">
+            <i data-lucide="play" class="w-4 h-4"></i> Iniciar Atividade
+          </button>
+          <button onclick="toggleActivityComplete('${activity.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-sm flex items-center justify-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i> Concluir
+          </button>
+        `;
+      } else if (activity.status === 'Em andamento') {
+        container.innerHTML = `
+          <button onclick="toggleActivityComplete('${activity.id}')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-sm flex items-center justify-center gap-1.5">
+            <i data-lucide="check-circle" class="w-4 h-4"></i> Marcar como Concluída
+          </button>
+          <button onclick="pauseActivity('${activity.id}')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-medium py-2 px-3 rounded-lg">
+            Pausar
+          </button>
+        `;
+      } else {
+        container.innerHTML = `
+          <button onclick="reopenActivity('${activity.id}')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-sm flex items-center justify-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reabrir Atividade
+          </button>
+        `;
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function startActivity(id) {
+      const act = AppState.activities.find(a => a.id === id);
+      if (!act) return;
+      act.status = 'Em andamento';
+      if (!act.realStartAt) act.realStartAt = new Date().toISOString();
+      act.history.push({
+        timestamp: new Date().toISOString(),
+        action: 'Atividade iniciada (Em andamento)'
+      });
+      saveActivityCloud(act);
+      refreshAppViews();
+      if (AppState.currentDetailActivityId === id) openActivityDetails(id);
+      showToast('Atividade iniciada!');
+    }
+
+    function pauseActivity(id) {
+      const act = AppState.activities.find(a => a.id === id);
+      if (!act) return;
+      act.status = 'Pendente';
+      act.history.push({
+        timestamp: new Date().toISOString(),
+        action: 'Atividade pausada (retornou a Pendente)'
+      });
+      saveActivityCloud(act);
+      refreshAppViews();
+      if (AppState.currentDetailActivityId === id) openActivityDetails(id);
+      showToast('Atividade retornou para pendente.');
+    }
+
+    function toggleActivityComplete(id) {
+      const act = AppState.activities.find(a => a.id === id);
+      if (!act) return;
+
+      act.status = 'Concluída';
+      act.completedAt = new Date().toISOString();
+      if (!act.realStartAt) act.realStartAt = act.completedAt;
+
+      act.history.push({
+        timestamp: new Date().toISOString(),
+        action: 'Atividade finalizada e concluída'
+      });
+
+      saveActivityCloud(act);
+      refreshAppViews();
+      if (AppState.currentDetailActivityId === id) openActivityDetails(id);
+      showToast('Atividade concluída com sucesso!');
+    }
+
+    function reopenActivity(id) {
+      const act = AppState.activities.find(a => a.id === id);
+      if (!act) return;
+
+      act.status = 'Pendente';
+      act.completedAt = null;
+      act.history.push({
+        timestamp: new Date().toISOString(),
+        action: 'Atividade reaberta pelo usuário'
+      });
+
+      saveActivityCloud(act);
+      refreshAppViews();
+      if (AppState.currentDetailActivityId === id) openActivityDetails(id);
+      showToast('Atividade reaberta!');
+    }
+
+    function duplicateActivity(id) {
+      const act = AppState.activities.find(a => a.id === id);
+      if (!act) return;
+
+      const newId = 'ATIV-' + (Math.floor(1000 + Math.random() * 9000));
+      const cloned = {
+        ...JSON.parse(JSON.stringify(act)),
+        id: newId,
+        title: `${act.title} (Cópia)`,
+        status: 'Pendente',
+        createdAt: new Date().toISOString(),
+        realStartAt: null,
+        completedAt: null,
+        archived: false,
+        history: [{ timestamp: new Date().toISOString(), action: `Duplicada a partir de ${act.id}` }]
+      };
+
+      AppState.activities.unshift(cloned);
+      saveActivityCloud(cloned);
+      refreshAppViews();
+      showToast(`Atividade duplicada: ${newId}`);
+    }
+
+    function archiveCurrentDetailActivity() {
+      const id = AppState.currentDetailActivityId;
+      if (!id) return;
+      const act = AppState.activities.find(a => a.id === id);
+      if (!act) return;
+
+      act.archived = true;
+      act.history.push({
+        timestamp: new Date().toISOString(),
+        action: 'Atividade arquivada'
+      });
+      saveActivityCloud(act);
+      closeDetailsPanel();
+      refreshAppViews();
+      showToast('Atividade arquivada.');
+    }
+
+    function confirmDeleteCurrentDetailActivity() {
+      const id = AppState.currentDetailActivityId;
+      if (!id) return;
+
+      openConfirmModal(
+        'Excluir Atividade',
+        'Tem certeza que deseja excluir esta atividade? O registro não poderá ser recuperado.',
+        () => {
+          AppState.activities = AppState.activities.filter(a => a.id !== id);
+          deleteActivityCloud(id);
+          closeDetailsPanel();
+          refreshAppViews();
+          showToast('Atividade excluída com sucesso.');
+        }
+      );
+    }
+
+    function openActivityModal(activityToEdit = null) {
+      renderCategories();
+      const modal = document.getElementById('activity-modal');
+      const titleModal = document.getElementById('modal-activity-title');
+
+      if (activityToEdit) {
+        titleModal.textContent = `Editar Atividade - ${activityToEdit.id}`;
+        document.getElementById('form-activity-id').value = activityToEdit.id;
+        document.getElementById('form-title').value = activityToEdit.title;
+        document.getElementById('form-category').value = activityToEdit.category;
+        document.getElementById('form-priority').value = activityToEdit.priority;
+        document.getElementById('form-start-date').value = activityToEdit.startDate || '';
+        document.getElementById('form-due-date').value = activityToEdit.dueDate || '';
+        document.getElementById('form-description').value = activityToEdit.description || '';
+        document.getElementById('form-observations').value = activityToEdit.observations || '';
+        document.getElementById('form-tags').value = (activityToEdit.tags || []).join(', ');
+        document.getElementById('form-activity-origin-note-date').value = activityToEdit.originNoteDate || '';
+      } else {
+        titleModal.textContent = 'Cadastrar Nova Atividade';
+        document.getElementById('activity-form').reset();
+        document.getElementById('form-activity-id').value = '';
+        document.getElementById('form-priority').value = 'Média';
+        document.getElementById('form-start-date').value = getTodayString();
+        document.getElementById('form-due-date').value = getTodayString();
+        document.getElementById('form-activity-origin-note-date').value = '';
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeActivityModal() {
+      document.getElementById('activity-modal').classList.add('hidden');
+    }
+
+    function handleActivityFormSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('form-activity-id').value;
+      const title = document.getElementById('form-title').value.trim();
+      const category = document.getElementById('form-category').value;
+      const priority = document.getElementById('form-priority').value;
+      const startDate = document.getElementById('form-start-date').value || null;
+      const dueDate = document.getElementById('form-due-date').value || null;
+      const description = document.getElementById('form-description').value.trim();
+      const observations = document.getElementById('form-observations').value.trim();
+      const tagsRaw = document.getElementById('form-tags').value;
+      const originNoteDate = document.getElementById('form-activity-origin-note-date').value || null;
+
+      const tags = tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+
+      if (id) {
+        const act = AppState.activities.find(a => a.id === id);
+        if (act) {
+          act.title = title;
+          act.category = category;
+          act.priority = priority;
+          act.startDate = startDate;
+          act.dueDate = dueDate;
+          act.description = description;
+          act.observations = observations;
+          act.tags = tags;
+          act.history.push({
+            timestamp: new Date().toISOString(),
+            action: 'Atividade editada via formulário'
+          });
+          saveActivityCloud(act);
+          if (AppState.currentDetailActivityId === id) openActivityDetails(id);
+          showToast('Atividade atualizada e salva na nuvem!');
+        }
+      } else {
+        const newId = 'ATIV-' + (Math.floor(1000 + Math.random() * 9000));
+        const newActivity = {
+          id: newId,
+          title,
+          category,
+          priority,
+          status: 'Pendente',
+          createdAt: new Date().toISOString(),
+          startDate,
+          dueDate,
+          realStartAt: null,
+          completedAt: null,
+          description,
+          observations,
+          tags,
+          subtasks: [],
+          archived: false,
+          originNoteDate,
+          history: [
+            { timestamp: new Date().toISOString(), action: 'Atividade cadastrada como Pendente' }
+          ]
+        };
+        AppState.activities.unshift(newActivity);
+        saveActivityCloud(newActivity);
+        showToast(`Atividade cadastrada: ${newId}`);
+      }
+
+      closeActivityModal();
+      refreshAppViews();
+    }
+
+    function editCurrentDetailActivity() {
+      const id = AppState.currentDetailActivityId;
+      if (!id) return;
+      const act = AppState.activities.find(a => a.id === id);
+      if (act) openActivityModal(act);
+    }
+
+    function editActivityDirect(id) {
+      const act = AppState.activities.find(a => a.id === id);
+      if (act) openActivityModal(act);
+    }
+
+    function duplicateCurrentDetailActivity() {
+      const id = AppState.currentDetailActivityId;
+      if (id) duplicateActivity(id);
+    }
+
+    let activeEditingNoteDate = null;
+
+    function openNoteModal(dateStr) {
+      activeEditingNoteDate = dateStr;
+      const modal = document.getElementById('note-modal');
+      document.getElementById('note-modal-date-title').textContent = `Registro Diário — ${formatDateBR(dateStr)}`;
+
+      const note = AppState.dailyNotes[dateStr] || {
+        date: dateStr,
+        freeText: '',
+        summary: '',
+        problems: '',
+        decisions: '',
+        meetings: '',
+        actions: '',
+        lastSaved: null
+      };
+
+      document.getElementById('note-input-free-text').value = note.freeText || '';
+      document.getElementById('note-input-summary').value = note.summary || '';
+      document.getElementById('note-input-problems').value = note.problems || '';
+      document.getElementById('note-input-decisions').value = note.decisions || '';
+      document.getElementById('note-input-meetings').value = note.meetings || '';
+      document.getElementById('note-input-actions').value = note.actions || '';
+      document.getElementById('note-modal-saving-tag').textContent = note.lastSaved ? 'Salvo' : 'Não salvo';
+
+      renderLinkedTasksInNoteModal(dateStr);
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function openNoteModalForToday() {
+      openNoteModal(getTodayString());
+    }
+
+    function closeNoteModal() {
+      document.getElementById('note-modal').classList.add('hidden');
+      activeEditingNoteDate = null;
+      renderCalendarView();
+    }
+
+    function handleNoteFieldInput() {
+      const savingTag = document.getElementById('note-modal-saving-tag');
+      if (savingTag) savingTag.textContent = 'Salvando na nuvem...';
+
+      clearTimeout(noteSaveTimeout);
+      noteSaveTimeout = setTimeout(() => {
+        saveNoteImmediately();
+      }, 700);
+    }
+
+    async function saveNoteImmediately() {
+      if (!activeEditingNoteDate) return false;
+      const dateStr = activeEditingNoteDate;
+
+      const freeText = document.getElementById('note-input-free-text').value;
+      const summary = document.getElementById('note-input-summary').value;
+      const problems = document.getElementById('note-input-problems').value;
+      const decisions = document.getElementById('note-input-decisions').value;
+      const meetings = document.getElementById('note-input-meetings').value;
+      const actions = document.getElementById('note-input-actions').value;
+
+      const noteData = {
+        date: dateStr,
+        freeText,
+        summary,
+        problems,
+        decisions,
+        meetings,
+        actions,
+        lastSaved: new Date().toISOString()
+      };
+
+      AppState.dailyNotes[dateStr] = noteData;
+      const savingTag = document.getElementById('note-modal-saving-tag');
+      if (savingTag) savingTag.textContent = 'Gravando...';
+
+      const success = await saveNoteCloud(dateStr, noteData);
+      if (savingTag) {
+        savingTag.textContent = success ? 'Salvo na nuvem' : 'Salvo localmente';
+      }
+
+      updateCountersAndBadges();
+      renderSelectedDayPreview();
+      return success;
+    }
+
+    async function saveAndCloseNoteModal() {
+      clearTimeout(noteSaveTimeout);
+      await saveNoteImmediately();
+      closeNoteModal();
+      showToast('Anotação salva na nuvem com sucesso!');
+    }
+
+    function toggleNoteStructuredFields() {
+      const body = document.getElementById('note-structured-fields-body');
+      const icon = document.getElementById('icon-structured-fields');
+      body.classList.toggle('hidden');
+      icon.classList.toggle('rotate-180');
+    }
+
+    function renderLinkedTasksInNoteModal(dateStr) {
+      const container = document.getElementById('note-linked-tasks-list');
+      const linked = AppState.activities.filter(a => a.originNoteDate === dateStr);
+
+      if (linked.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400">Nenhuma atividade originada desta anotação.</span>';
+        return;
+      }
+
+      container.innerHTML = linked.map(a => `
+        <div class="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-[10px] text-slate-500 font-bold">${a.id}</span>
+            <span class="font-medium text-slate-800">${a.title}</span>
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded-full ${a.status === 'Concluída' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'} font-semibold">
+            ${a.status}
+          </span>
+        </div>
+      `).join('');
+    }
+
+    function convertCurrentNoteToTask() {
+      if (!activeEditingNoteDate) return;
+      const textarea = document.getElementById('note-input-free-text');
+      let selectedText = '';
+      
+      if (textarea.selectionStart !== textarea.selectionEnd) {
+        selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+      }
+
+      if (!selectedText) {
+        const lines = textarea.value.split('\n').filter(Boolean);
+        selectedText = lines.length > 0 ? lines[0] : 'Nova atividade originada da anotação';
+      }
+
+      closeNoteModal();
+
+      openActivityModal();
+      document.getElementById('form-title').value = selectedText;
+      document.getElementById('form-description').value = `Origem no diário do dia ${formatDateBR(activeEditingNoteDate)}:\n"${selectedText}"`;
+      document.getElementById('form-activity-origin-note-date').value = activeEditingNoteDate;
+      document.getElementById('form-priority').value = 'Alta';
+      document.getElementById('form-start-date').value = activeEditingNoteDate;
+      document.getElementById('form-due-date').value = activeEditingNoteDate;
+    }
+
+    function confirmDeleteCurrentNote() {
+      if (!activeEditingNoteDate) return;
+      const dateStr = activeEditingNoteDate;
+
+      openConfirmModal(
+        'Excluir Anotação Diária',
+        `Deseja realmente apagar o registro do dia ${formatDateBR(dateStr)}?`,
+        () => {
+          delete AppState.dailyNotes[dateStr];
+          deleteNoteCloud(dateStr);
+          closeNoteModal();
+          renderCalendarView();
+          updateCountersAndBadges();
+          showToast('Anotação excluída.');
+        }
+      );
+    }
+
+    function renderHistoryView() {
+      const startFilter = document.getElementById('history-filter-start').value;
+      const endFilter = document.getElementById('history-filter-end').value;
+
+      let completedActs = AppState.activities.filter(a => a.status === 'Concluída' && !a.archived);
+
+      if (startFilter) {
+        completedActs = completedActs.filter(a => a.completedAt && a.completedAt >= startFilter);
+      }
+      if (endFilter) {
+        completedActs = completedActs.filter(a => a.completedAt && a.completedAt.split('T')[0] <= endFilter);
+      }
+
+      const total = completedActs.length;
+      const onTime = completedActs.filter(a => {
+        if (!a.dueDate || !a.completedAt) return true;
+        return a.completedAt.split('T')[0] <= a.dueDate;
+      }).length;
+      const late = total - onTime;
+
+      document.getElementById('history-total-completed').textContent = total;
+      document.getElementById('history-on-time-count').textContent = onTime;
+      document.getElementById('history-late-count').textContent = late;
+
+      const container = document.getElementById('history-timeline-container');
+      if (total === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400 py-6 text-center">Nenhuma atividade concluída encontrada no período.</div>';
+        return;
+      }
+
+      container.innerHTML = completedActs.map(act => {
+        const completedDay = act.completedAt ? act.completedAt.split('T')[0] : null;
+        const wasLate = act.dueDate && completedDay && completedDay > act.dueDate;
+
+        return `
+          <div onclick="openActivityDetails('${act.id}')" class="p-3.5 rounded-lg border border-slate-200/80 bg-white hover:border-slate-300 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-mono text-[10px] font-bold text-slate-500">${act.id}</span>
+                <span class="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                  ${act.category}
+                </span>
+                <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">✓ Finalizada</span>
+              </div>
+              <h4 class="text-xs font-bold text-slate-800">${act.title}</h4>
+            </div>
+
+            <div class="text-right text-xs">
+              <span class="text-slate-400 block text-[10px]">Concluída em:</span>
+              <span class="font-semibold text-slate-700">${formatDateTimeBR(act.completedAt)}</span>
+              ${wasLate ? '<span class="text-[10px] text-amber-600 block font-semibold">Concluída após o prazo</span>' : '<span class="text-[10px] text-emerald-600 block">No prazo</span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderArchivedView() {
+      const container = document.getElementById('archived-items-container');
+      const archived = AppState.activities.filter(a => a.archived);
+
+      if (archived.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400 py-6 text-center">Nenhum item arquivado.</div>';
+        return;
+      }
+
+      container.innerHTML = archived.map(act => `
+        <div class="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50/50 text-xs">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] font-bold text-slate-400">${act.id}</span>
+              <span class="font-bold text-slate-700">${act.title}</span>
+            </div>
+            <span class="text-[10px] text-slate-400">Categoria: ${act.category} | Prioridade: ${act.priority}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="restoreArchived('${act.id}')" class="px-2.5 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 rounded">Restaurar</button>
+            <button onclick="permanentlyDeleteArchived('${act.id}')" class="px-2.5 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded">Excluir</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function restoreArchived(id) {
+      const act = AppState.activities.find(a => a.id === id);
+      if (!act) return;
+      act.archived = false;
+      act.history.push({
+        timestamp: new Date().toISOString(),
+        action: 'Atividade desarquivada'
+      });
+      saveActivityCloud(act);
+      refreshAppViews();
+      showToast('Atividade restaurada.');
+    }
+
+    function restoreAllArchived() {
+      AppState.activities.forEach(a => {
+        if (a.archived) {
+          a.archived = false;
+          saveActivityCloud(a);
+        }
+      });
+      refreshAppViews();
+      showToast('Todas as atividades foram restauradas.');
+    }
+
+    function permanentlyDeleteArchived(id) {
+      openConfirmModal(
+        'Excluir Definitivamente',
+        'Esta ação não pode ser desfeita. Confirmar exclusão?',
+        () => {
+          AppState.activities = AppState.activities.filter(a => a.id !== id);
+          deleteActivityCloud(id);
+          refreshAppViews();
+          showToast('Item excluído definitivamente.');
+        }
+      );
+    }
+
+    function exportDataJSON() {
+      const data = {
+        app: 'CentralDeGestaoPessoal',
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        categories: AppState.categories,
+        activities: AppState.activities,
+        dailyNotes: AppState.dailyNotes
+      };
+
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup_gestao_${getTodayString()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Arquivo de backup JSON gerado com sucesso!');
+    }
+
+    function importDataJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (parsed.activities && parsed.categories) {
+            AppState.categories = parsed.categories;
+            AppState.activities = parsed.activities;
+            AppState.dailyNotes = parsed.dailyNotes || {};
+
+            // Synchronize imported data with cloud
+            for (const cat of AppState.categories) {
+              await saveCategoryCloud(cat);
+            }
+            for (const act of AppState.activities) {
+              await saveActivityCloud(act);
+            }
+            for (const [dateStr, noteData] of Object.entries(AppState.dailyNotes)) {
+              await saveNoteCloud(dateStr, noteData);
+            }
+
+            refreshAppViews();
+            showToast('Dados restaurados e sincronizados na nuvem!');
+          } else {
+            showToast('Formato de arquivo JSON inválido.');
+          }
+        } catch (err) {
+          showToast('Erro ao ler arquivo JSON.');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    function confirmResetAllData() {
+      openConfirmModal(
+        'Limpar Todos os Dados',
+        'Deseja realmente apagar todas as atividades e anotações cadastradas? Esta ação limpará o sistema e a nuvem.',
+        async () => {
+          for (const act of AppState.activities) {
+            await deleteActivityCloud(act.id);
+          }
+          for (const dateStr of Object.keys(AppState.dailyNotes)) {
+            await deleteNoteCloud(dateStr);
+          }
+          AppState.activities = [];
+          AppState.dailyNotes = {};
+          refreshAppViews();
+          showToast('Todos os dados foram limpos com sucesso.');
+        }
+      );
+    }
+
+    function openCategoryManageModal() {
+      renderCategoryModalList();
+      document.getElementById('category-modal').classList.remove('hidden');
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('category-modal').classList.add('hidden');
+    }
+
+    function renderCategoryModalList() {
+      const list = document.getElementById('modal-category-list');
+      list.innerHTML = AppState.categories.map(c => `
+        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="font-medium text-slate-800">${c.name}</span>
+          </div>
+          <button onclick="confirmDeleteCategory('${c.id}')" class="text-slate-400 hover:text-rose-600 p-1">
+            <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      `).join('');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function handleNewCategorySubmit(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById('new-cat-name');
+      const name = nameInput.value.trim();
+
+      if (!name) return;
+      if (AppState.categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+        showToast('Essa categoria já existe.');
+        return;
+      }
+
+      const newCat = {
+        id: 'cat-' + Date.now(),
+        name
+      };
+
+      AppState.categories.push(newCat);
+      saveCategoryCloud(newCat);
+
+      nameInput.value = '';
+      renderCategoryModalList();
+      renderCategories();
+      showToast(`Categoria "${name}" criada e salva na nuvem!`);
+    }
+
+    function confirmDeleteCategory(catId) {
+      const cat = AppState.categories.find(c => c.id === catId);
+      if (!cat) return;
+
+      openConfirmModal(
+        'Excluir Categoria',
+        `Deseja remover a categoria "${cat.name}"? As atividades existentes não serão apagadas.`,
+        () => {
+          AppState.categories = AppState.categories.filter(c => c.id !== catId);
+          deleteCategoryCloud(catId);
+          renderCategoryModalList();
+          renderCategories();
+          showToast(`Categoria "${cat.name}" removida.`);
+        }
+      );
+    }
+
+    function toggleSidebarFilters() {
+      AppState.sidebarFiltersOpen = !AppState.sidebarFiltersOpen;
+      const container = document.getElementById('sidebar-filters-container');
+      const icon = document.getElementById('icon-sidebar-filters');
+      if (container) {
+        container.classList.toggle('hidden', !AppState.sidebarFiltersOpen);
+      }
+      if (icon) {
+        icon.classList.toggle('rotate-180', !AppState.sidebarFiltersOpen);
+      }
+    }
+
+    function toggleSidebarCategories() {
+      AppState.sidebarCategoriesOpen = !AppState.sidebarCategoriesOpen;
+      const list = document.getElementById('sidebar-categories-list');
+      const icon = document.getElementById('icon-sidebar-categories');
+      if (list) {
+        list.classList.toggle('hidden', !AppState.sidebarCategoriesOpen);
+      }
+      if (icon) {
+        icon.classList.toggle('rotate-180', !AppState.sidebarCategoriesOpen);
+      }
+    }
+
+    function toggleAllTasksFilterBar() {
+      AppState.allTasksFiltersOpen = !AppState.allTasksFiltersOpen;
+      const drawer = document.getElementById('all-tasks-filters-drawer');
+      const icon = document.getElementById('icon-tasks-filter-toggle');
+      if (drawer) {
+        drawer.classList.toggle('hidden', !AppState.allTasksFiltersOpen);
+      }
+      if (icon) {
+        icon.classList.toggle('rotate-180', AppState.allTasksFiltersOpen);
+      }
+    }
+
+    function setAppView(viewId) {
+      AppState.currentView = viewId;
+
+      const views = ['my-day', 'all-tasks', 'notes-calendar', 'history', 'archived', 'settings'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if (el) el.classList.toggle('hidden', v !== viewId);
+      });
+
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('bg-brand-50', 'text-brand-700', 'font-semibold');
+      });
+      const activeNav = document.getElementById(`nav-btn-${viewId}`);
+      if (activeNav) activeNav.classList.add('bg-brand-50', 'text-brand-700', 'font-semibold');
+
+      const titleEl = document.getElementById('current-view-title');
+      const subtitleEl = document.getElementById('current-view-subtitle');
+
+      const titles = {
+        'my-day': { t: 'Meu Dia', s: 'Visão executiva e prioridades imediatas' },
+        'all-tasks': { t: 'Todas as Atividades', s: 'Gestão completa em cards e modo lista' },
+        'notes-calendar': { t: 'Calendário de Anotações', s: 'Diário profissional, reuniões e decisões' },
+        'history': { t: 'Histórico & Concluídas', s: 'Registro consolidado e auditoria de entregas' },
+        'archived': { t: 'Atividades Arquivadas', s: 'Itens arquivados fora do fluxo ativo' },
+        'settings': { t: 'Configurações & Backup', s: 'Exportação, importação e parâmetros de rotina' }
+      };
+
+      if (titles[viewId]) {
+        titleEl.textContent = titles[viewId].t;
+        subtitleEl.textContent = titles[viewId].s;
+      }
+
+      toggleSidebar(false);
+      refreshAppViews();
+    }
+
+    function setStatusFilter(status) {
+      AppState.statusFilter = status;
+      setAppView('all-tasks');
+
+      document.querySelectorAll('.filter-item').forEach(btn => {
+        btn.classList.remove('bg-brand-50', 'text-brand-700', 'font-semibold');
+      });
+      const activeBtn = document.getElementById(`filter-btn-${status}`);
+      if (activeBtn) activeBtn.classList.add('bg-brand-50', 'text-brand-700', 'font-semibold');
+
+      refreshAppViews();
+    }
+
+    function setCategoryFilter(catName) {
+      AppState.categoryFilter = (AppState.categoryFilter === catName) ? 'ALL' : catName;
+      setAppView('all-tasks');
+      refreshAppViews();
+    }
+
+    function resetFilters() {
+      AppState.statusFilter = 'all';
+      AppState.categoryFilter = 'ALL';
+      AppState.priorityFilter = 'ALL';
+      AppState.searchQuery = '';
+      document.getElementById('global-search-input').value = '';
+      document.getElementById('filter-select-category').value = 'ALL';
+      document.getElementById('filter-select-priority').value = 'ALL';
+      refreshAppViews();
+      showToast('Filtros restaurados para o padrão.');
+    }
+
+    function handleFilterCategoryChange(val) {
+      AppState.categoryFilter = val;
+      refreshAppViews();
+    }
+
+    function handleFilterPriorityChange(val) {
+      AppState.priorityFilter = val;
+      refreshAppViews();
+    }
+
+    function handleSortChange(val) {
+      AppState.sortBy = val;
+      refreshAppViews();
+    }
+
+    function setDisplayMode(mode) {
+      AppState.displayMode = mode;
+      const btnGrid = document.getElementById('btn-mode-grid');
+      const btnList = document.getElementById('btn-mode-list');
+
+      if (mode === 'grid') {
+        btnGrid.className = 'p-1.5 rounded-md text-xs font-medium bg-white text-slate-800 shadow-2xs transition';
+        btnList.className = 'p-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 transition';
+      } else {
+        btnList.className = 'p-1.5 rounded-md text-xs font-medium bg-white text-slate-800 shadow-2xs transition';
+        btnGrid.className = 'p-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 transition';
+      }
+
+      renderAllTasksView();
+    }
+
+    function handleGlobalSearch(query) {
+      AppState.searchQuery = query;
+      const clearBtn = document.getElementById('search-clear-btn');
+      if (query.trim()) {
+        clearBtn.classList.remove('hidden');
+        if (AppState.currentView !== 'all-tasks' && AppState.currentView !== 'notes-calendar') {
+          setAppView('all-tasks');
+        }
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+      refreshAppViews();
+    }
+
+    function clearGlobalSearch() {
+      document.getElementById('global-search-input').value = '';
+      AppState.searchQuery = '';
+      document.getElementById('search-clear-btn').classList.add('hidden');
+      refreshAppViews();
+    }
+
+    function filterFromKpi(type) {
+      if (type === 'today') {
+        AppState.statusFilter = 'all';
+        AppState.sortBy = 'deadline_asc';
+        setAppView('all-tasks');
+      } else if (type === 'overdue') {
+        setStatusFilter('overdue');
+      } else if (type === 'in_progress') {
+        setStatusFilter('in_progress');
+      } else if (type === 'done_today') {
+        setAppView('history');
+      }
+    }
+
+    function toggleSection(sectionBodyId) {
+      const body = document.getElementById(sectionBodyId);
+      const icon = document.getElementById(`icon-${sectionBodyId}`);
+      if (body) body.classList.toggle('hidden');
+      if (icon) icon.classList.toggle('rotate-180');
+    }
+
+    function toggleSidebar(forceState) {
+      const sidebar = document.getElementById('main-sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+      const target = (typeof forceState === 'boolean') ? forceState : !isOpen;
+
+      if (target) {
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+      }
+    }
+
+    function openConfirmModal(title, message, onConfirm) {
+      document.getElementById('confirm-modal-title').textContent = title;
+      document.getElementById('confirm-modal-message').textContent = message;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+      confirmResolveCallback = onConfirm;
+    }
+
+    function resolveConfirm(decision) {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      if (decision && typeof confirmResolveCallback === 'function') {
+        confirmResolveCallback();
+      }
+      confirmResolveCallback = null;
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').textContent = message;
+      toast.classList.remove('translate-y-16', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0');
+      }, 3200);
+    }
+
+    function refreshAppViews() {
+      updateCountersAndBadges();
+      renderCategories();
+
+      if (AppState.currentView === 'my-day') {
+        renderMyDayView();
+      } else if (AppState.currentView === 'all-tasks') {
+        renderAllTasksView();
+      } else if (AppState.currentView === 'notes-calendar') {
+        renderCalendarView();
+      } else if (AppState.currentView === 'history') {
+        renderHistoryView();
+      } else if (AppState.currentView === 'archived') {
+        renderArchivedView();
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function setupGreeting() {
+      const now = new Date();
+      const hour = now.getHours();
+      let greeting = 'Bom dia!';
+      if (hour >= 12 && hour < 18) greeting = 'Boa tarde!';
+      else if (hour >= 18 || hour < 5) greeting = 'Boa noite!';
+
+      document.getElementById('greeting-text').textContent = `${greeting} Pronto para a gestão do dia?`;
+
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const formattedDate = now.toLocaleDateString('pt-BR', options);
+      document.getElementById('current-full-date').textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+    }
+
+    Object.assign(window, {
+      toggleSidebar, openActivityModal, setAppView, toggleSidebarFilters, resetFilters,
+      setStatusFilter, toggleSidebarCategories, openCategoryManageModal, handleGlobalSearch,
+      clearGlobalSearch, openNoteModalForToday, filterFromKpi, setSubtasksWidgetTab,
+      toggleSection, toggleAllTasksFilterBar, setDisplayMode, handleFilterCategoryChange,
+      handleFilterPriorityChange, handleSortChange, changeCalendarMonth, jumpToCalendarToday,
+      openNoteModal, renderHistoryView, restoreAllArchived, exportDataJSON, importDataJSON,
+      confirmResetAllData, editCurrentDetailActivity, duplicateCurrentDetailActivity,
+      archiveCurrentDetailActivity, confirmDeleteCurrentDetailActivity, closeDetailsPanel,
+      toggleNewSubtaskForm, saveNewSubtask, confirmCompleteFromSubtasks, closeActivityModal,
+      handleActivityFormSubmit, convertCurrentNoteToTask, toggleNoteStructuredFields,
+      confirmDeleteCurrentNote, closeNoteModal, saveAndCloseNoteModal, closeCategoryModal,
+      handleNewCategorySubmit, confirmDeleteCategory, resolveConfirm, openActivityDetails,
+      toggleActivityComplete, reopenActivity, editActivityDirect, duplicateActivity,
+      startActivity, pauseActivity, toggleSubtask, deleteSubtask, toggleSubtaskFromWidget,
+      restoreArchived, permanentlyDeleteArchived, selectCalendarDay, handleNoteFieldInput,
+      saveNoteImmediately, handleGoogleLogin, handleLogout
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setupGreeting();
+      setAppView('my-day');
+      refreshAppViews();
+      initCloudSync();
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeActivityModal();
+          closeNoteModal();
+          closeCategoryModal();
+          closeDetailsPanel();
+          resolveConfirm(false);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

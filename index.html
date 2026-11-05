@@ -2819,6 +2819,9 @@
 
       const tags = tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
 
+      let savePromise = Promise.resolve(true);
+      let okMessage = '';
+
       if (id) {
         const act = AppState.activities.find(a => a.id === id);
         if (act) {
@@ -2834,9 +2837,8 @@
             timestamp: new Date().toISOString(),
             action: 'Atividade editada via formulário'
           });
-          const okEdit = await saveActivityCloud(act);
-          if (AppState.currentDetailActivityId === id) openActivityDetails(id);
-          showToast(okEdit ? 'Atividade atualizada e salva na nuvem!' : `ERRO ao salvar na nuvem (${lastCloudError})`);
+          savePromise = saveActivityCloud(act);
+          okMessage = 'Atividade atualizada e salva na nuvem!';
         }
       } else {
         const newId = 'ATIV-' + (Math.floor(1000 + Math.random() * 9000));
@@ -2862,12 +2864,17 @@
           ]
         };
         AppState.activities.unshift(newActivity);
-        const okNew = await saveActivityCloud(newActivity);
-        showToast(okNew ? `Atividade cadastrada: ${newId}` : `ERRO ao salvar na nuvem (${lastCloudError})`);
+        savePromise = saveActivityCloud(newActivity);
+        okMessage = `Atividade cadastrada: ${newId}`;
       }
 
       closeActivityModal();
+      closeDetailsPanel();
       refreshAppViews();
+
+      savePromise.then(ok => {
+        showToast(ok ? okMessage : `ERRO ao salvar na nuvem (${lastCloudError})`);
+      });
     }
 
     function editCurrentDetailActivity() {
@@ -2987,8 +2994,9 @@
 
     async function saveAndCloseNoteModal() {
       clearTimeout(noteSaveTimeout);
-      const okNote = await saveNoteImmediately();
+      const notePromise = saveNoteImmediately();
       closeNoteModal();
+      const okNote = await notePromise;
       showToast(okNote ? 'Anotação salva na nuvem com sucesso!' : `ERRO ao salvar anotação (${lastCloudError})`);
     }
 

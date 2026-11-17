@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Minha Rotina</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#2563eb', 600: '#1d4ed8', 700: '#1e40af' }
+          },
+          fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { scrollbar-width: none; }
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    textarea, input, select { font-size: 16px; } /* evita zoom automático no iPhone */
+    @media (min-width: 768px) { textarea, input, select { font-size: 14px; } }
+  </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-800">
+
+<div class="flex h-full">
+
+  <!-- ===== MENU LATERAL (computador) ===== -->
+  <aside class="hidden md:flex w-60 flex-shrink-0 flex-col bg-white border-r border-slate-200">
+    <div class="h-16 px-5 flex items-center gap-2.5 border-b border-slate-100">
+      <div class="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center" data-icon="check" data-cls="w-4 h-4"></div>
+      <span class="font-semibold text-slate-900">Minha Rotina</span>
+    </div>
+    <div class="p-4">
+      <button data-action="new" class="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium py-2.5 rounded-lg transition">
+        <span data-icon="plus"></span> Nova atividade
+      </button>
+    </div>
+    <nav class="px-3 space-y-0.5 flex-1">
+      <button data-action="view" data-view="hoje" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
+        <span class="flex items-center gap-2.5"><span data-icon="sun"></span>Hoje</span>
+        <span class="badge-hoje text-xs font-semibold text-slate-400"></span>
+      </button>
+      <button data-action="view" data-view="proximos" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
+        <span data-icon="calendar"></span>Próximos dias
+      </button>
+      <button data-action="view" data-view="notas" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
+        <span data-icon="book"></span>Anotações
+      </button>
+      <button data-action="view" data-view="concluidas" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
+        <span data-icon="checkCircle"></span>Concluídas
+      </button>
+    </nav>
+    <div class="p-3 border-t border-slate-100">
+      <button data-action="view" data-view="config" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
+        <span data-icon="settings"></span>Configurações
+      </button>
+      <div class="flex items-center gap-2 px-3 pt-2 text-xs text-slate-400">
+        <span id="cloud-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+        <span id="cloud-text">Conectando...</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== CONTEÚDO ===== -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- Cabeçalho -->
+    <header class="bg-white border-b border-slate-200 flex-shrink-0">
+      <div class="h-14 md:h-16 px-4 md:px-6 flex items-center justify-between gap-3 max-w-3xl md:max-w-none mx-auto w-full">
+        <h1 id="view-title" class="text-lg font-semibold text-slate-900">Hoje</h1>
+        <div class="flex items-center gap-2">
+          <div id="search-wrap" class="hidden md:block relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search"></span>
+            <input id="search-input" type="search" placeholder="Buscar atividades..." class="w-56 md:w-64 pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
+          </div>
+          <button data-action="toggle-search" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Buscar"><span data-icon="search" data-cls="w-5 h-5"></span></button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="flex-1 overflow-y-auto pb-28 md:pb-10">
+      <div class="max-w-3xl mx-auto px-4 md:px-6 py-4 md:py-6">
+
+        <!-- HOJE -->
+        <section id="view-hoje" class="view space-y-4">
+          <div class="bg-white rounded-xl border border-slate-200 p-4">
+            <div id="hoje-date" class="text-sm text-slate-500"></div>
+            <div class="flex items-center gap-3 mt-2">
+              <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div id="hoje-bar" class="h-full bg-brand-600 rounded-full transition-all" style="width:0%"></div></div>
+              <span id="hoje-progress" class="text-xs font-medium text-slate-500 whitespace-nowrap"></span>
+            </div>
+          </div>
+
+          <form id="quick-add" class="flex gap-2">
+            <input id="quick-add-input" type="text" placeholder="Adicionar atividade para hoje..." class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500" autocomplete="off">
+            <button type="submit" class="px-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white" aria-label="Adicionar"><span data-icon="plus" data-cls="w-5 h-5"></span></button>
+          </form>
+
+          <div class="cat-chips flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0"></div>
+          <div id="hoje-list" class="space-y-5"></div>
+        </section>
+
+        <!-- PRÓXIMOS -->
+        <section id="view-proximos" class="view space-y-4 hidden">
+          <div class="cat-chips flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0"></div>
+          <div id="prox-list" class="space-y-5"></div>
+        </section>
+
+        <!-- ANOTAÇÕES -->
+        <section id="view-notas" class="view hidden">
+          <div class="grid gap-4 lg:grid-cols-5">
+            <div class="lg:col-span-2 space-y-4">
+              <div class="bg-white rounded-xl border border-slate-200 p-3">
+                <div class="flex items-center justify-between mb-2">
+                  <button data-action="cal-prev" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100"><span data-icon="chevronLeft"></span></button>
+                  <button data-action="cal-today" id="cal-title" class="text-sm font-semibold text-slate-800 hover:text-brand-600"></button>
+                  <button data-action="cal-next" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100"><span data-icon="chevronRight"></span></button>
+                </div>
+                <div class="grid grid-cols-7 text-center text-[11px] font-medium text-slate-400 mb-1">
+                  <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+                </div>
+                <div id="cal-grid" class="grid grid-cols-7 gap-1"></div>
+              </div>
+              <div class="bg-white rounded-xl border border-slate-200 p-3 hidden lg:block">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Últimas anotações</h3>
+                <div id="notes-recent" class="space-y-1"></div>
+              </div>
+            </div>
+            <div class="lg:col-span-3">
+              <div class="bg-white rounded-xl border border-slate-200 p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <h2 id="note-date-label" class="text-sm font-semibold text-slate-900"></h2>
+                  <span id="note-status" class="text-xs text-slate-400"></span>
+                </div>
+                <textarea id="note-text" rows="12" placeholder="Escreva aqui o que aconteceu no dia, ligações, combinados, ideias..." class="w-full p-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 leading-relaxed resize-y"></textarea>
+                <div class="flex items-center justify-between mt-3 gap-2">
+                  <span class="text-xs text-slate-400">Salva sozinho enquanto você escreve</span>
+                  <button data-action="note-to-task" class="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:bg-brand-50 px-3 py-1.5 rounded-lg" title="Selecione um trecho do texto para usar como título">
+                    <span data-icon="arrowRight"></span> Criar atividade
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONCLUÍDAS -->
+        <section id="view-concluidas" class="view space-y-5 hidden">
+          <div id="done-list" class="space-y-5"></div>
+        </section>
+
+        <!-- BUSCA -->
+        <section id="view-busca" class="view space-y-4 hidden">
+          <div id="search-list"></div>
+        </section>
+
+        <!-- CONFIGURAÇÕES -->
+        <section id="view-config" class="view space-y-4 hidden">
+          <button data-action="view" data-view="concluidas" class="md:hidden w-full flex items-center justify-between bg-white rounded-xl border border-slate-200 p-4 text-sm font-medium text-slate-700">
+            <span class="flex items-center gap-2.5"><span data-icon="checkCircle"></span>Atividades concluídas</span>
+            <span data-icon="chevronRight" class="text-slate-400"></span>
+          </button>
+
+          <div class="bg-white rounded-xl border border-slate-200 p-4">
+            <h2 class="text-sm font-semibold text-slate-900">Categorias</h2>
+            <form id="cat-form" class="flex gap-2 mt-3">
+              <input id="cat-input" type="text" placeholder="Nova categoria..." class="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
+              <button type="submit" class="px-4 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium">Criar</button>
+            </form>
+            <div id="cfg-cats" class="mt-3 divide-y divide-slate-100"></div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 p-4">
+            <h2 class="text-sm font-semibold text-slate-900">Backup</h2>
+            <p class="text-xs text-slate-500 mt-1">Guarde uma cópia de tudo num arquivo. Faça isso de vez em quando.</p>
+            <div class="flex flex-wrap gap-2 mt-3">
+              <button data-action="export" class="inline-flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-lg border border-slate-200 hover:bg-slate-50"><span data-icon="download"></span>Baixar backup</button>
+              <label class="inline-flex items-center gap-2 text-sm font-medium px-3.5 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"><span data-icon="upload"></span>Restaurar backup
+                <input id="import-input" type="file" accept=".json" class="hidden">
+              </label>
+            </div>
+            <div id="cfg-archived" class="mt-3"></div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 p-4 text-xs text-slate-500">
+            <span class="font-semibold text-slate-700">Acesso público:</span> qualquer pessoa com o link vê e edita estes dados.
+            <div class="flex items-center gap-2 mt-2 md:hidden">
+              <span class="cloud-dot-m w-2 h-2 rounded-full bg-amber-400"></span><span class="cloud-text-m">Conectando...</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ===== BOTÃO + (celular) ===== -->
+<button data-action="new" class="md:hidden fixed right-4 bottom-20 z-30 w-14 h-14 rounded-full bg-brand-600 text-white shadow-lg flex items-center justify-center active:scale-95 transition" aria-label="Nova atividade" style="margin-bottom: env(safe-area-inset-bottom)">
+  <span data-icon="plus" data-cls="w-6 h-6"></span>
+</button>
+
+<!-- ===== MENU INFERIOR (celular) ===== -->
+<nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 safe-bottom">
+  <div class="grid grid-cols-4 h-16">
+    <button data-action="view" data-view="hoje" class="tab-btn relative flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500">
+      <span data-icon="sun" data-cls="w-5 h-5"></span>Hoje
+      <span class="badge-hoje-m absolute top-1.5 left-1/2 ml-2 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-semibold flex items-center justify-center hidden"></span>
+    </button>
+    <button data-action="view" data-view="proximos" class="tab-btn flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500"><span data-icon="calendar" data-cls="w-5 h-5"></span>Próximos</button>
+    <button data-action="view" data-view="notas" class="tab-btn flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500"><span data-icon="book" data-cls="w-5 h-5"></span>Anotações</button>
+    <button data-action="view" data-view="config" class="tab-btn flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500"><span data-icon="more" data-cls="w-5 h-5"></span>Mais</button>
+  </div>
+</nav>
+
+<!-- ===== JANELA DA ATIVIDADE ===== -->
+<div id="sheet" class="hidden fixed inset-0 z-50 bg-slate-900/40 flex items-end md:items-center justify-center md:p-4">
+  <div class="bg-white w-full md:max-w-lg rounded-t-2xl md:rounded-2xl shadow-xl flex flex-col max-h-[92vh]">
+    <div class="flex items-center justify-between px-4 pt-4 pb-2">
+      <span id="sheet-heading" class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Nova atividade</span>
+      <button data-action="sheet-close" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100" aria-label="Fechar"><span data-icon="x" data-cls="w-5 h-5"></span></button>
+    </div>
+    <div id="sheet-body" class="px-4 pb-4 overflow-y-auto space-y-4"></div>
+    <div class="flex items-center gap-2 px-4 py-3 border-t border-slate-100 safe-bottom">
+      <button id="sheet-delete" data-action="sheet-delete" class="p-2.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50" title="Excluir atividade"><span data-icon="trash" data-cls="w-5 h-5"></span></button>
+      <div class="flex-1"></div>
+      <button data-action="sheet-close" class="px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">Cancelar</button>
+      <button data-action="sheet-save" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONFIRMAÇÃO ===== -->
+<div id="confirm" class="hidden fixed inset-0 z-[60] bg-slate-900/40 flex items-center justify-center p-4">
+  <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl p-5">
+    <h3 id="confirm-title" class="text-base font-semibold text-slate-900"></h3>
+    <p id="confirm-msg" class="text-sm text-slate-500 mt-1.5"></p>
+    <div class="flex gap-2 mt-5">
+      <button data-action="confirm-no" class="flex-1 py-2.5 rounded-lg text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
+      <button data-action="confirm-yes" id="confirm-yes" class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-rose-600 hover:bg-rose-700 text-white">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AVISO ===== -->
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-24 md:bottom-6 z-[70] px-4 py-2.5 rounded-lg bg-slate-900 text-white text-sm shadow-lg opacity-0 pointer-events-none transition-opacity"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+  // ================= CONFIGURAÇÃO =================
+  const appId = 'gestao-diaria-1ab71';
+  const firebaseConfig = {
+    apiKey: "AIzaSyBfZz5Y8FUA4y-uqlE_a1mFY_L-ujlMTos",
+    authDomain: "gestao-diaria-1ab71.firebaseapp.com",
+    projectId: "gestao-diaria-1ab71",
+    storageBucket: "gestao-diaria-1ab71.firebasestorage.app",
+    messagingSenderId: "85652620636",
+    appId: "1:85652620636:web:7102804f2b78b4f4e2ad99",
+    measurementId: "G-CY7VWVSLCD"
+  };
+  // Mesmo local de dados da versão anterior (acesso público, dados compartilhados)
+  const DATA_PATH = ['artifacts', appId, 'public', 'data'];
+
+  const INITIAL_CATEGORIES = ['Processo','Gestão','Rotina','Manutenção','Compras','Estamparia','Corte e Dobra','Projeto','Logística','PCP','RH','SAC','TI','Marketing']
+    .map((name, i) => ({ id: 'cat-' + (i + 1), name }));
+
+  let db = null, isCloudReady = false;
+  let unsubs = [];
+
+  const S = {
+    view: 'hoje',
+    catFilter: 'ALL',
+    search: '',
+    categories: [],
+    activities: [],
+    notes: {},
+    calYear: new Date().getFullYear(),
+    calMonth: new Date().getMonth(),
+    noteDate: null,
+    doneLimit: 60,
+    showDoneToday: false
+  };
+
+  // ================= ÍCONES =================
+  const ICONS = {
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+    star: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    book: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+    checkCircle: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+    settings: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+    search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    x: '<path d="M18 6 6 18M6 6l12 12"/>',
+    trash: '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    repeat: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+    chevronLeft: '<path d="m15 18-6-6 6-6"/>',
+    chevronRight: '<path d="m9 18 6-6-6-6"/>',
+    chevronDown: '<path d="m6 9 6 6 6-6"/>',
+    list: '<path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/>',
+    more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+    download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+    upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
+    arrowRight: '<path d="M5 12h14M12 5l7 7-7 7"/>'
+  };
+  function icon(name, cls = 'w-4 h-4', filled = false) {
+    return `<svg class="${cls} flex-shrink-0" viewBox="0 0 24 24" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
+  }
+  function paintStaticIcons() {
+    document.querySelectorAll('[data-icon]').forEach(el => {
+      if (el.dataset.painted) return;
+      el.insertAdjacentHTML('afterbegin', icon(el.dataset.icon, el.dataset.cls || 'w-4 h-4'));
+      el.dataset.painted = '1';
+    });
+  }
+
+  // ================= UTILITÁRIOS =================
+  const esc = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const pad = n => String(n).padStart(2, '0');
+  const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const parseYmd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const today = () => ymd(new Date());
+  const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
+  const localDate = iso => iso ? ymd(new Date(iso)) : null;
+  const nowIso = () => new Date().toISOString();
+  const newId = () => 'ATIV-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  const clean = obj => JSON.parse(JSON.stringify(obj));
+  const WEEK_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  function dateLabel(s) {
+    if (!s) return 'Sem data';
+    const t = today();
+    if (s === t) return 'Hoje';
+    if (s === addDays(t, 1)) return 'Amanhã';
+    if (s === addDays(t, -1)) return 'Ontem';
+    const d = parseYmd(s);
+    const label = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace('.', '');
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  }
+  function longDate(s) {
+    const txt = parseYmd(s).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+    return txt.charAt(0).toUpperCase() + txt.slice(1);
+  }
+
+  let toastTimer = null;
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.remove('opacity-0');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.add('opacity-0'), 2800);
+  }
+
+  let confirmCb = null;
+  function confirmBox(title, msg, onYes, yesLabel = 'Confirmar') {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-msg').textContent = msg;
+    document.getElementById('confirm-yes').textContent = yesLabel;
+    document.getElementById('confirm').classList.remove('hidden');
+    confirmCb = onYes;
+  }
+  function closeConfirm(yes) {
+    document.getElementById('confirm').classList.add('hidden');
+    const cb = confirmCb; confirmCb = null;
+    if (yes && cb) cb();
+  }
+
+  // ================= REGRAS DAS ATIVIDADES =================
+  function normalizeStatus(v) {
+    const k = String(v || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+    const map = { pending: 'Pendente', pendente: 'Pendente', in_progress: 'Em andamento', em_andamento: 'Em andamento',
+      completed: 'Concluída', done: 'Concluída', concluida: 'Concluída', 'concluída': 'Concluída', overdue: 'Atrasada', atrasada: 'Atrasada' };
+    return map[k] || v || 'Pendente';
+  }
+  // Status automático: prazo vencido = Atrasada; senão Pendente.
+  // Em andamento / Pendente escolhidos à mão ficam fixos até voltar para "Automático".
+  function syncStatus(a) {
+    if (!Array.isArray(a.subtasks)) a.subtasks = [];
+    if (!Array.isArray(a.history)) a.history = [];
+    a.status = normalizeStatus(a.status);
+    if (a.status === 'Concluída') return;
+    if (a.statusManual === true && (a.status === 'Pendente' || a.status === 'Em andamento')) return;
+    a.statusManual = false;
+    a.status = (a.dueDate && a.dueDate < today()) ? 'Atrasada' : 'Pendente';
+  }
+  const isDone = a => a.status === 'Concluída';
+  const isImportant = a => a.priority === 'Urgente' || a.priority === 'Alta';
+  const findAct = id => S.activities.find(a => a.id === id);
+  const nextNumber = () => S.activities.reduce((m, a) => Math.max(m, Number(a.number) || 0), 0) + 1;
+
+  function sortActs(list) {
+    return [...list].sort((a, b) =>
+      (isImportant(b) - isImportant(a)) ||
+      ((b.status === 'Em andamento') - (a.status === 'Em andamento')) ||
+      (a.dueDate || '9999').localeCompare(b.dueDate || '9999') ||
+      (Number(a.number) || 0) - (Number(b.number) || 0));
+  }
+
+  // ----- Repetição -----
+  function nextOccurrence(s, rec) {
+    const d = parseYmd(s);
+    switch (rec.type) {
+      case 'daily': d.setDate(d.getDate() + 1); return ymd(d);
+      case 'weekdays': do { d.setDate(d.getDate() + 1); } while (d.getDay() === 0 || d.getDay() === 6); return ymd(d);
+      case 'weekly': d.setDate(d.getDate() + 7); return ymd(d);
+      case 'monthly': {
+        const day = rec.dayOfMonth || d.getDate();
+        const last = new Date(d.getFullYear(), d.getMonth() + 2, 0).getDate();
+        return ymd(new Date(d.getFullYear(), d.getMonth() + 1, Math.min(day, last)));
+      }
+      case 'days': {
+        const days = rec.days || [];
+        if (!days.length) return null;
+        for (let i = 0; i < 7; i++) { d.setDate(d.getDate() + 1); if (days.includes(d.getDay())) return ymd(d); }
+        return null;
+      }
+    }
+    return null;
+  }
+  function recLabel(rec) {
+    if (!rec || !rec.type || rec.type === 'none') return '';
+    if (rec.type === 'daily') return 'Todo dia';
+    if (rec.type === 'weekdays') return 'Dias úteis';
+    if (rec.type === 'weekly') return 'Toda semana';
+    if (rec.type === 'monthly') return 'Todo mês';
+    if (rec.type === 'days') return (rec.days || []).slice().sort().map(d => WEEK_SHORT[d]).join(', ');
+    return '';
+  }
+
+  // Conclui. Se repete, cria a próxima ocorrência. Retorna a nova (ou null).
+  function completeActivity(a) {
+    const now = nowIso();
+    a.status = 'Concluída';
+    a.statusManual = false;
+    a.completedAt = now;
+    if (!a.realStartAt) a.realStartAt = now;
+    a.history.push({ timestamp: now, action: 'Atividade concluída' });
+
+    const rec = a.recurrence;
+    if (!rec || !rec.type || rec.type === 'none') return null;
+    if (a.nextSpawnedId && findAct(a.nextSpawnedId)) return null; // já criada antes
+
+    const t = today();
+    let next = nextOccurrence(a.dueDate || t, rec);
+    let guard = 0;
+    while (next && next < t && guard++ < 500) next = nextOccurrence(next, rec);
+    if (!next) return null;
+
+    const copy = {
+      ...clean(a),
+      id: newId(),
+      number: nextNumber(),
+      status: 'Pendente',
+      statusManual: false,
+      dueDate: next,
+      startDate: null,
+      createdAt: now,
+      realStartAt: null,
+      completedAt: null,
+      nextSpawnedId: null,
+      archived: false,
+      subtasks: (a.subtasks || []).map(s => ({ ...s, status: 'pending', completedAt: null })),
+      history: [{ timestamp: now, action: 'Criada automaticamente (atividade que se repete)' }]
+    };
+    syncStatus(copy);
+    a.nextSpawnedId = copy.id;
+    S.activities.unshift(copy);
+    saveAct(copy);
+    return copy;
+  }
+  function reopenActivity(a) {
+    a.completedAt = null;
+    a.statusManual = false;
+    a.status = 'Pendente';
+    syncStatus(a);
+    a.history.push({ timestamp: nowIso(), action: 'Atividade reaberta' });
+  }
+
+  // ================= NUVEM =================
+  const colRef = name => collection(db, ...DATA_PATH, name);
+  const docRef = (name, id) => doc(db, ...DATA_PATH, name, id);
+  let lastError = '';
+
+  async function cloud(fn) {
+    if (!isCloudReady) { lastError = 'sem conexão'; return false; }
+    try { await fn(); return true; } catch (e) { console.error(e); lastError = e.code || e.message; return false; }
+  }
+  const saveAct = a => cloud(() => setDoc(docRef('activities', a.id), clean(a)));
+  const delAct = id => cloud(() => deleteDoc(docRef('activities', id)));
+  const saveNote = (d, n) => cloud(() => setDoc(docRef('dailyNotes', d), clean(n)));
+  const delNote = d => cloud(() => deleteDoc(docRef('dailyNotes', d)));
+  const saveCat = c => cloud(() => setDoc(docRef('categories', c.id), clean(c)));
+  const delCat = id => cloud(() => deleteDoc(docRef('categories', id)));
+
+  function setCloudStatus(ok, text) {
+    const cls = `w-2 h-2 rounded-full ${ok === true ? 'bg-emerald-500' : ok === false ? 'bg-rose-500' : 'bg-amber-400'}`;
+    document.getElementById('cloud-dot').className = cls;
+    document.getElementById('cloud-text').textContent = text;
+    document.querySelectorAll('.cloud-dot-m').forEach(e => e.className = 'cloud-dot-m ' + cls);
+    document.querySelectorAll('.cloud-text-m').forEach(e => e.textContent = text);
+  }
+
+  function startSync() {
+    unsubs.forEach(u => u()); unsubs = [];
+    unsubs.push(onSnapshot(colRef('categories'), async snap => {
+      if (snap.empty) { for (const c of INITIAL_CATEGORIES) await saveCat(c); return; }
+      S.categories = snap.docs.map(d => d.data()).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+      render();
+    }, e => { console.error(e); setCloudStatus(false, 'Erro: ' + (e.code || '')); }));
+    unsubs.push(onSnapshot(colRef('activities'), snap => {
+      S.activities = snap.docs.map(d => d.data());
+      render();
+    }, e => { console.error(e); setCloudStatus(false, 'Erro: ' + (e.code || '')); }));
+    unsubs.push(onSnapshot(colRef('dailyNotes'), snap => {
+      const m = {}; snap.forEach(d => m[d.id] = d.data());
+      S.notes = m;
+      render();
+    }, e => console.error(e)));
+  }
+
+  function initCloud() {
+    try {
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      db = getFirestore(app);
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          isCloudReady = true;
+          setCloudStatus(true, 'Salvo na nuvem');
+          startSync();
+        } else {
+          isCloudReady = false;
+          setCloudStatus(null, 'Conectando...');
+          signInAnonymously(auth).catch(err => {
+            console.error(err);
+            const hint = (err.code === 'auth/admin-restricted-operation' || err.code === 'auth/operation-not-allowed')
+              ? 'ative o login Anônimo no Firebase' : (err.code || err.message);
+            setCloudStatus(false, 'Sem conexão');
+            toast('Erro ao conectar: ' + hint);
+          });
+        }
+      });
+    } catch (e) {
+      console.error(e);
+      setCloudStatus(false, 'Erro de conexão');
+    }
+  }
+
+  // ================= DESENHO DAS TELAS =================
+  function activeActs(applyCat = true) {
+    return S.activities.filter(a => !a.archived && (!applyCat || S.catFilter === 'ALL' || a.category === S.catFilter));
+  }
+
+  function rowHTML(a, { showDate = true } = {}) {
+    const done = isDone(a);
+    const t = today();
+    const late = !done && a.dueDate && a.dueDate < t;
+    const subs = a.subtasks || [];
+    const subsDone = subs.filter(s => s.status === 'done').length;
+    const meta = [];
+    if (showDate && a.dueDate) meta.push(`<span class="${late ? 'text-rose-600 font-medium' : ''}">${dateLabel(a.dueDate)}</span>`);
+    if (a.category) meta.push(`<span>${esc(a.category)}</span>`);
+    if (a.recurrence && a.recurrence.type && a.recurrence.type !== 'none') meta.push(`<span class="inline-flex items-center gap-1">${icon('repeat', 'w-3 h-3')}${esc(recLabel(a.recurrence))}</span>`);
+    if (subs.length) meta.push(`<span class="inline-flex items-center gap-1">${icon('list', 'w-3 h-3')}${subsDone}/${subs.length}</span>`);
+
+    let pill = '';
+    if (!done && a.status === 'Em andamento') pill = '<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap">Em andamento</span>';
+    else if (!done && a.status === 'Atrasada') pill = '<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap">Atrasada</span>';
+
+    return `
+      <div data-action="open" data-id="${esc(a.id)}" class="flex items-center gap-3 px-3 py-3 bg-white hover:bg-slate-50 cursor-pointer transition">
+        <button data-action="toggle" data-id="${esc(a.id)}" aria-label="${done ? 'Reabrir' : 'Concluir'}"
+          class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition ${done ? 'bg-emerald-500 border-emerald-500 text-white' : late ? 'border-rose-400 hover:bg-rose-50' : 'border-slate-300 hover:border-brand-500 hover:bg-brand-50'}">
+          ${done ? icon('check', 'w-3.5 h-3.5') : ''}
+        </button>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm ${done ? 'line-through text-slate-400' : 'text-slate-900 font-medium'} truncate">${esc(a.title)}</div>
+          ${meta.length ? `<div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-400 mt-0.5">${meta.join('<span class="text-slate-300">·</span>')}</div>` : ''}
+        </div>
+        ${pill}
+        <button data-action="star" data-id="${esc(a.id)}" aria-label="Importante" class="p-1 -mr-1 rounded ${isImportant(a) ? 'text-amber-400' : 'text-slate-200 hover:text-slate-400'}">
+          ${icon('star', 'w-5 h-5', isImportant(a))}
+        </button>
+      </div>`;
+  }
+
+  function groupHTML(title, list, { tone = 'slate', showDate = true, extra = '' } = {}) {
+    if (!list.length) return '';
+    const color = tone === 'rose' ? 'text-rose-600' : tone === 'blue' ? 'text-blue-700' : 'text-slate-500';
+    return `
+      <div>
+        <div class="flex items-center gap-2 px-1 mb-2">
+          <h3 class="text-xs font-semibold uppercase tracking-wide ${color}">${title}</h3>
+          <span class="text-xs text-slate-400">${list.length}</span>${extra}
+        </div>
+        <div class="rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-100">
+          ${list.map(a => rowHTML(a, { showDate })).join('')}
+        </div>
+      </div>`;
+  }
+
+  function renderChips() {
+    const used = new Set(S.activities.filter(a => !a.archived && !isDone(a) && a.category).map(a => a.category));
+    if (S.catFilter !== 'ALL') used.add(S.catFilter);
+    const cats = S.categories.map(c => c.name).filter(n => used.has(n));
+    const chip = (val, label) => `<button data-action="cat" data-cat="${esc(val)}" class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition ${S.catFilter === val ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}">${esc(label)}</button>`;
+    const html = cats.length ? chip('ALL', 'Todas') + cats.map(n => chip(n, n)).join('') : '';
+    document.querySelectorAll('.cat-chips').forEach(el => { el.innerHTML = html; el.classList.toggle('hidden', !html); });
+  }
+
+  function renderHoje() {
+    const t = today();
+    const acts = activeActs();
+    const open = acts.filter(a => !isDone(a));
+    const overdue = sortActs(open.filter(a => a.dueDate && a.dueDate < t));
+    const todays = sortActs(open.filter(a => a.dueDate === t));
+    const doing = sortActs(open.filter(a => a.status === 'Em andamento' && !(a.dueDate && a.dueDate <= t)));
+    const doneToday = acts.filter(a => isDone(a) && localDate(a.completedAt) === t)
+      .sort((a, b) => (b.completedAt || '').localeCompare(a.completedAt || ''));
+
+    document.getElementById('hoje-date').textContent = longDate(t);
+    const plannedAll = acts.filter(a => a.dueDate === t);
+    const plannedDone = plannedAll.filter(isDone).length;
+    const pct = plannedAll.length ? Math.round(plannedDone / plannedAll.length * 100) : 0;
+    document.getElementById('hoje-bar').style.width = pct + '%';
+    document.getElementById('hoje-progress').textContent = plannedAll.length ? `${plannedDone} de ${plannedAll.length} feitas` : 'Nada programado';
+
+    let html = groupHTML('Atrasadas', overdue, { tone: 'rose' })
+      + groupHTML('Para hoje', todays, { showDate: false })
+      + groupHTML('Em andamento', doing, { tone: 'blue' });
+
+    if (!overdue.length && !todays.length && !doing.length) {
+      html = `<div class="text-center py-12 text-slate-400">
+        <div class="w-12 h-12 mx-auto rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mb-3">${icon('check', 'w-6 h-6')}</div>
+        <p class="text-sm font-medium text-slate-600">Tudo em dia!</p>
+        <p class="text-xs mt-1">Nenhuma atividade pendente para hoje.</p></div>`;
+    }
+
+    if (doneToday.length) {
+      html += `
+        <div>
+          <button data-action="toggle-done-today" class="flex items-center gap-2 px-1 mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-600">
+            <span class="transition ${S.showDoneToday ? '' : '-rotate-90'}">${icon('chevronDown', 'w-3.5 h-3.5')}</span>
+            Concluídas hoje <span class="text-slate-400 font-normal">${doneToday.length}</span>
+          </button>
+          ${S.showDoneToday ? `<div class="rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-100">${doneToday.map(a => rowHTML(a)).join('')}</div>` : ''}
+        </div>`;
+    }
+    document.getElementById('hoje-list').innerHTML = html;
+  }
+
+  function renderProximos() {
+    const t = today();
+    const open = activeActs().filter(a => !isDone(a) && !(a.dueDate && a.dueDate <= t) && a.status !== 'Em andamento');
+    const groups = new Map();
+    const order = [];
+    const put = (key, title, a) => { if (!groups.has(key)) { groups.set(key, { title, list: [] }); order.push(key); } groups.get(key).list.push(a); };
+    const limit = addDays(t, 7);
+    sortActs(open.filter(a => a.dueDate)).forEach(a => {
+      if (a.dueDate <= limit) put(a.dueDate, a.dueDate === addDays(t, 1) ? 'Amanhã' : longDate(a.dueDate), a);
+    });
+    const later = sortActs(open.filter(a => a.dueDate && a.dueDate > limit));
+    const noDate = sortActs(open.filter(a => !a.dueDate));
+
+    let html = order.map(k => groupHTML(esc(groups.get(k).title), groups.get(k).list, { showDate: false })).join('')
+      + groupHTML('Mais adiante', later)
+      + groupHTML('Sem data', noDate, { showDate: false });
+
+    if (!html) html = '<div class="text-center py-12 text-sm text-slate-400">Nada agendado para os próximos dias.</div>';
+    document.getElementById('prox-list').innerHTML = html;
+  }
+
+  function renderConcluidas() {
+    const done = S.activities.filter(a => !a.archived && isDone(a))
+      .sort((a, b) => (b.completedAt || '').localeCompare(a.completedAt || ''));
+    const shown = done.slice(0, S.doneLimit);
+    const groups = new Map();
+    shown.forEach(a => {
+      const k = localDate(a.completedAt) || 'sem';
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(a);
+    });
+    let html = [...groups.entries()].map(([k, list]) =>
+      groupHTML(k === 'sem' ? 'Sem data' : esc(dateLabel(k) === 'Hoje' || dateLabel(k) === 'Ontem' ? dateLabel(k) : longDate(k)), list, { tone: 'slate' })).join('');
+    if (!done.length) html = '<div class="text-center py-12 text-sm text-slate-400">Nenhuma atividade concluída ainda.</div>';
+    if (done.length > S.doneLimit) html += `<button data-action="more-done" class="w-full py-2.5 text-sm font-medium text-brand-600 hover:bg-white rounded-lg">Mostrar mais</button>`;
+    document.getElementById('done-list').innerHTML = html;
+  }
+
+  function renderBusca() {
+    const q = S.search.trim().toLowerCase();
+    const res = S.activities.filter(a => !a.archived && (
+      (a.title || '').toLowerCase().includes(q) ||
+      (a.description || '').toLowerCase().includes(q) ||
+      (a.category || '').toLowerCase().includes(q) ||
+      (a.subtasks || []).some(s => (s.title || '').toLowerCase().includes(q))));
+    const open = sortActs(res.filter(a => !isDone(a)));
+    const done = res.filter(isDone).sort((a, b) => (b.completedAt || '').localeCompare(a.completedAt || ''));
+    const notes = Object.entries(S.notes).filter(([, n]) => (n.freeText || '').toLowerCase().includes(q)).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 10);
+    let html = groupHTML('Abertas', open) + groupHTML('Concluídas', done);
+    if (notes.length) {
+      html += `<div><h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 px-1 mb-2">Anotações</h3>
+        <div class="rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-100 bg-white">
+        ${notes.map(([d, n]) => `<button data-action="open-note" data-date="${d}" class="w-full text-left px-3 py-2.5 hover:bg-slate-50">
+          <div class="text-xs font-medium text-slate-500">${esc(longDate(d))}</div>
+          <div class="text-sm text-slate-700 truncate">${esc(n.freeText)}</div></button>`).join('')}
+        </div></div>`;
+    }
+    if (!html) html = `<div class="text-center py-12 text-sm text-slate-400">Nada encontrado para "${esc(S.search)}".</div>`;
+    document.getElementById('search-list').innerHTML = `<div class="space-y-5">${html}</div>`;
+  }
+
+  // ----- Anotações -----
+  let noteTimer = null, noteDirty = false;
+
+  function renderNotas() {
+    if (!S.noteDate) S.noteDate = today();
+    const y = S.calYear, m = S.calMonth, t = today();
+    const mt = new Date(y, m, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    document.getElementById('cal-title').textContent = mt.charAt(0).toUpperCase() + mt.slice(1);
+    const first = new Date(y, m, 1).getDay();
+    const total = new Date(y, m + 1, 0).getDate();
+    let cells = '';
+    for (let i = 0; i < first; i++) cells += '<div></div>';
+    for (let d = 1; d <= total; d++) {
+      const ds = `${y}-${pad(m + 1)}-${pad(d)}`;
+      const has = S.notes[ds] && (S.notes[ds].freeText || S.notes[ds].summary);
+      const sel = ds === S.noteDate, isT = ds === t;
+      cells += `<button data-action="pick-day" data-date="${ds}" class="relative h-10 rounded-lg text-sm transition
+        ${sel ? 'bg-brand-600 text-white font-semibold' : isT ? 'text-brand-600 font-semibold hover:bg-brand-50' : 'text-slate-700 hover:bg-slate-100'}">
+        ${d}${has ? `<span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${sel ? 'bg-white' : 'bg-brand-500'}"></span>` : ''}</button>`;
+    }
+    document.getElementById('cal-grid').innerHTML = cells;
+
+    const recent = Object.entries(S.notes).filter(([, n]) => n.freeText).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 6);
+    document.getElementById('notes-recent').innerHTML = recent.length ? recent.map(([d, n]) =>
+      `<button data-action="pick-day" data-date="${d}" class="w-full text-left px-2 py-1.5 rounded-lg hover:bg-slate-50">
+        <div class="text-xs font-medium text-slate-500">${esc(dateLabel(d) === 'Hoje' || dateLabel(d) === 'Ontem' ? dateLabel(d) : longDate(d))}</div>
+        <div class="text-sm text-slate-700 truncate">${esc(n.freeText)}</div></button>`).join('')
+      : '<p class="text-xs text-slate-400 px-2">Nenhuma anotação ainda.</p>';
+
+    // Só reescreve o texto quando muda o dia (não atrapalha quem está digitando)
+    const ta = document.getElementById('note-text');
+    if (ta.dataset.date !== S.noteDate) {
+      ta.dataset.date = S.noteDate;
+      ta.value = (S.notes[S.noteDate] && S.notes[S.noteDate].freeText) || '';
+      document.getElementById('note-status').textContent = '';
+    } else if (!noteDirty && document.activeElement !== ta) {
+      ta.value = (S.notes[S.noteDate] && S.notes[S.noteDate].freeText) || '';
+    }
+    document.getElementById('note-date-label').textContent = longDate(S.noteDate);
+  }
+
+  async function flushNote() {
+    clearTimeout(noteTimer);
+    if (!noteDirty) return;
+    noteDirty = false;
+    const ta = document.getElementById('note-text');
+    const d = ta.dataset.date;
+    if (!d) return;
+    const text = ta.value;
+    const prev = S.notes[d] || {};
+    const status = document.getElementById('note-status');
+    const hasOther = prev.summary || prev.problems || prev.decisions || prev.meetings || prev.actions;
+    let ok;
+    if (!text.trim() && !hasOther) {
+      delete S.notes[d];
+      ok = await delNote(d);
+    } else {
+      const n = { ...prev, date: d, freeText: text, lastSaved: nowIso() };
+      S.notes[d] = n;
+      ok = await saveNote(d, n);
+    }
+    if (ta.dataset.date === d) status.textContent = ok ? 'Salvo ✓' : 'Erro ao salvar';
+  }
+
+  function pickDay(ds) {
+    flushNote();
+    S.noteDate = ds;
+    const d = parseYmd(ds);
+    S.calYear = d.getFullYear(); S.calMonth = d.getMonth();
+    renderNotas();
+  }
+
+  // ----- Configurações -----
+  function renderConfig() {
+    document.getElementById('cfg-cats').innerHTML = S.categories.map(c => {
+      const n = S.activities.filter(a => !a.archived && !isDone(a) && a.category === c.name).length;
+      return `<div class="flex items-center justify-between py-2.5">
+        <span class="text-sm text-slate-700">${esc(c.name)} <span class="text-xs text-slate-400">${n ? `· ${n} aberta${n > 1 ? 's' : ''}` : ''}</span></span>
+        <button data-action="del-cat" data-id="${esc(c.id)}" class="p-1.5 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50" aria-label="Excluir">${icon('trash')}</button></div>`;
+    }).join('') || '<p class="text-xs text-slate-400 py-2">Nenhuma categoria.</p>';
+
+    const arch = S.activities.filter(a => a.archived).length;
+    document.getElementById('cfg-archived').innerHTML = arch
+      ? `<p class="text-xs text-slate-500">Há ${arch} atividade(s) arquivada(s) da versão antiga. <button data-action="restore-archived" class="text-brand-600 font-medium hover:underline">Trazer de volta</button></p>` : '';
+  }
+
+  // ----- Geral -----
+  const TITLES = { hoje: 'Hoje', proximos: 'Próximos dias', notas: 'Anotações', concluidas: 'Concluídas', config: 'Configurações', busca: 'Busca' };
+
+  function render() {
+    S.activities.forEach(syncStatus);
+    const t = today();
+    const pendingToday = S.activities.filter(a => !a.archived && !isDone(a) && ((a.dueDate && a.dueDate <= t) || a.status === 'Em andamento')).length;
+    document.querySelectorAll('.badge-hoje').forEach(e => e.textContent = pendingToday || '');
+    document.querySelectorAll('.badge-hoje-m').forEach(e => { e.textContent = pendingToday; e.classList.toggle('hidden', !pendingToday); });
+
+    const view = S.search.trim() ? 'busca' : S.view;
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('hidden', v.id !== 'view-' + view));
+    document.getElementById('view-title').textContent = TITLES[view];
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      const on = b.dataset.view === S.view && view !== 'busca';
+      b.classList.toggle('bg-brand-50', on); b.classList.toggle('text-brand-700', on); b.classList.toggle('font-medium', on);
+    });
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      const on = b.dataset.view === S.view || (S.view === 'concluidas' && b.dataset.view === 'config');
+      b.classList.toggle('text-brand-600', on); b.classList.toggle('text-slate-500', !on);
+    });
+
+    if (view === 'hoje' || view === 'proximos') renderChips();
+    if (view === 'hoje') renderHoje();
+    else if (view === 'proximos') renderProximos();
+    else if (view === 'notas') renderNotas();
+    else if (view === 'concluidas') renderConcluidas();
+    else if (view === 'config') renderConfig();
+    else if (view === 'busca') renderBusca();
+  }
+
+  function setView(v) {
+    if (S.view === 'notas' && v !== 'notas') flushNote();
+    S.view = v;
+    if (S.search) { S.search = ''; document.getElementById('search-input').value = ''; }
+    document.getElementById('main').scrollTop = 0;
+    render();
+  }
+
+  // ================= JANELA DA ATIVIDADE =================
+  let draft = null, draftOriginal = '';
+
+  function openSheet(id = null, preset = {}) {
+    const a = id ? findAct(id) : null;
+    if (id && !a) return;
+    if (a) {
+      draft = {
+        id: a.id, title: a.title || '', dueDate: a.dueDate || '', category: a.category || '',
+        important: isImportant(a),
+        recurrence: a.recurrence && a.recurrence.type ? { type: a.recurrence.type, days: [...(a.recurrence.days || [])] } : { type: 'none', days: [] },
+        statusChoice: isDone(a) ? 'Concluída' : (a.statusManual && (a.status === 'Pendente' || a.status === 'Em andamento')) ? a.status : 'auto',
+        description: a.description || '',
+        subtasks: clean(a.subtasks || []),
+        originNoteDate: a.originNoteDate || null
+      };
+    } else {
+      draft = {
+        id: null, title: '', dueDate: today(), category: S.catFilter !== 'ALL' ? S.catFilter : '',
+        important: false, recurrence: { type: 'none', days: [] }, statusChoice: 'auto',
+        description: '', subtasks: [], originNoteDate: null, ...preset
+      };
+    }
+    draftOriginal = JSON.stringify(draft);
+    document.getElementById('sheet-heading').textContent = a ? 'Editar atividade' : 'Nova atividade';
+    document.getElementById('sheet-delete').classList.toggle('invisible', !a);
+    renderSheet();
+    document.getElementById('sheet').classList.remove('hidden');
+    if (!a) setTimeout(() => document.getElementById('sh-title')?.focus(), 50);
+  }
+
+  function readSheet() {
+    if (!draft) return;
+    const g = id => document.getElementById(id);
+    if (g('sh-title')) draft.title = g('sh-title').value;
+    if (g('sh-date')) draft.dueDate = g('sh-date').value;
+    if (g('sh-cat')) draft.category = g('sh-cat').value;
+    if (g('sh-desc')) draft.description = g('sh-desc').value;
+    draft.subtasks.forEach(s => { const el = document.querySelector(`[data-sub-title="${s.id}"]`); if (el) s.title = el.value; });
+  }
+
+  function renderSheet() {
+    const d = draft;
+    const t = today();
+    const catOpts = ['<option value="">Sem categoria</option>']
+      .concat(S.categories.map(c => `<option value="${esc(c.name)}" ${c.name === d.category ? 'selected' : ''}>${esc(c.name)}</option>`));
+    if (d.category && !S.categories.some(c => c.name === d.category)) catOpts.push(`<option value="${esc(d.category)}" selected>${esc(d.category)}</option>`);
+
+    const dateChip = (val, label) => `<button type="button" data-action="sh-date" data-val="${val}" class="px-2.5 py-1 rounded-full text-xs font-medium border ${d.dueDate === val ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}">${label}</button>`;
+    const recOpts = [['none', 'Não repete'], ['daily', 'Todo dia'], ['weekdays', 'Dias úteis (seg a sex)'], ['weekly', 'Toda semana'], ['monthly', 'Todo mês'], ['days', 'Escolher dias da semana']]
+      .map(([v, l]) => `<option value="${v}" ${d.recurrence.type === v ? 'selected' : ''}>${l}</option>`).join('');
+
+    let autoNow = 'Pendente';
+    if (d.dueDate && d.dueDate < t) autoNow = 'Atrasada';
+    const statusBtn = (val, label) => `<button type="button" data-action="sh-status" data-val="${val}" class="flex-1 px-2 py-2 rounded-md text-xs font-medium transition ${d.statusChoice === val ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}">${label}</button>`;
+    const statusHint = {
+      auto: `Segue a data. Agora: <b>${autoNow}</b>. Se o prazo passar, vira Atrasada sozinha.`,
+      'Pendente': 'Fixado em Pendente (não muda sozinho pela data).',
+      'Em andamento': 'Fixado em Em andamento.',
+      'Concluída': 'Será marcada como concluída ao salvar.'
+    }[d.statusChoice];
+
+    const subsDone = d.subtasks.filter(s => s.status === 'done').length;
+
+    // Data de criação: automática, só para consulta
+    let createdInfo = 'Criada hoje (automático)';
+    const orig = d.id ? findAct(d.id) : null;
+    if (orig && orig.createdAt) {
+      const c = localDate(orig.createdAt);
+      const days = Math.round((parseYmd(t) - parseYmd(c)) / 86400000);
+      createdInfo = `Criada em ${c.split('-').reverse().join('/')}` + (days === 0 ? ' (hoje)' : days === 1 ? ' (ontem)' : ` (há ${days} dias)`);
+    }
+
+    document.getElementById('sheet-body').innerHTML = `
+      <input id="sh-title" type="text" value="${esc(d.title)}" placeholder="O que precisa ser feito?" class="w-full text-lg font-semibold text-slate-900 placeholder:text-slate-300 border-0 border-b border-slate-200 focus:border-brand-500 focus:ring-0 focus:outline-none px-0 py-2" autocomplete="off">
+      <div class="flex items-center gap-1.5 -mt-2 text-xs text-slate-400">${icon('calendar', 'w-3.5 h-3.5')}${createdInfo}</div>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-500 mb-1.5">Pretendo terminar até</label>
+        <div class="flex flex-wrap items-center gap-2">
+          <input id="sh-date" type="date" value="${esc(d.dueDate)}" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20">
+          ${dateChip(t, 'Hoje')}${dateChip(addDays(t, 1), 'Amanhã')}${dateChip('', 'Sem data')}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1.5">Repetir</label>
+          <select id="sh-rec" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20">${recOpts}</select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1.5">Categoria</label>
+          <select id="sh-cat" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20">${catOpts.join('')}</select>
+        </div>
+      </div>
+      ${d.recurrence.type === 'days' ? `<div class="flex gap-1.5 -mt-2">${WEEK_SHORT.map((w, i) => `<button type="button" data-action="sh-day" data-day="${i}" class="flex-1 py-1.5 rounded-lg text-xs font-medium border ${d.recurrence.days.includes(i) ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200'}">${w}</button>`).join('')}</div>` : ''}
+      ${d.recurrence.type !== 'none' ? '<p class="text-xs text-slate-400 -mt-2">Ao concluir, a próxima já é criada sozinha.</p>' : ''}
+
+      <div>
+        <label class="block text-xs font-medium text-slate-500 mb-1.5">Status</label>
+        <div class="flex gap-1 p-1 bg-slate-100 rounded-lg">
+          ${statusBtn('auto', 'Automático')}${statusBtn('Pendente', 'Pendente')}${statusBtn('Em andamento', 'Em andamento')}${statusBtn('Concluída', 'Concluída')}
+        </div>
+        <p class="text-xs text-slate-400 mt-1.5">${statusHint}</p>
+      </div>
+
+      <button type="button" data-action="sh-star" class="inline-flex items-center gap-2 text-sm font-medium ${d.important ? 'text-amber-500' : 'text-slate-500 hover:text-slate-700'}">
+        ${icon('star', 'w-5 h-5', d.important)} ${d.important ? 'Importante' : 'Marcar como importante'}
+      </button>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-500 mb-1.5">Subtarefas ${d.subtasks.length ? `<span class="text-slate-400 font-normal">· ${subsDone}/${d.subtasks.length}</span>` : ''}</label>
+        <div class="space-y-1">
+          ${d.subtasks.map(s => `
+            <div class="flex items-center gap-2 group">
+              <button type="button" data-action="sh-sub-toggle" data-sid="${esc(s.id)}" class="w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${s.status === 'done' ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300'}">${s.status === 'done' ? icon('check', 'w-3 h-3') : ''}</button>
+              <input data-sub-title="${esc(s.id)}" value="${esc(s.title)}" class="flex-1 text-sm py-1 px-1 rounded border-0 focus:ring-1 focus:ring-brand-500 focus:outline-none ${s.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700'}">
+              <button type="button" data-action="sh-sub-del" data-sid="${esc(s.id)}" class="p-1 text-slate-300 hover:text-rose-600" aria-label="Remover">${icon('x')}</button>
+            </div>`).join('')}
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 flex items-center justify-center text-slate-300">${icon('plus')}</span>
+            <input id="sh-sub-new" type="text" placeholder="Adicionar subtarefa" class="flex-1 text-sm py-1 px-1 border-0 focus:ring-0 focus:outline-none placeholder:text-slate-400" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-slate-500 mb-1.5">Observações</label>
+        <textarea id="sh-desc" rows="3" placeholder="Detalhes (opcional)" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">${esc(d.description)}</textarea>
+      </div>
+    `;
+  }
+
+  function addDraftSubtask() {
+    const inp = document.getElementById('sh-sub-new');
+    const title = inp.value.trim();
+    if (!title) return;
+    readSheet();
+    draft.subtasks.push({ id: 'sub-' + Date.now() + Math.random().toString(36).slice(2, 5), title, status: 'pending', dueDate: null, createdAt: nowIso() });
+    renderSheet();
+    document.getElementById('sh-sub-new').focus();
+  }
+
+  function closeSheet(force = false) {
+    if (!draft) return;
+    if (!force) {
+      readSheet();
+      const pending = document.getElementById('sh-sub-new')?.value.trim();
+      if (JSON.stringify(draft) !== draftOriginal || pending) {
+        confirmBox('Descartar alterações?', 'Você fez mudanças que ainda não foram salvas.', () => closeSheet(true), 'Descartar');
+        return;
+      }
+    }
+    document.getElementById('sheet').classList.add('hidden');
+    draft = null;
+  }
+
+  async function saveSheet() {
+    readSheet();
+    const pendingSub = document.getElementById('sh-sub-new')?.value.trim();
+    if (pendingSub) addDraftSubtask(), readSheet();
+    const d = draft;
+    d.subtasks = d.subtasks.filter(s => (s.title || '').trim());
+    if (!d.title.trim()) { toast('Escreva o nome da atividade'); document.getElementById('sh-title').focus(); return; }
+    if (d.recurrence.type === 'days' && !d.recurrence.days.length) { toast('Escolha pelo menos um dia da semana'); return; }
+    if (d.recurrence.type !== 'none' && !d.dueDate) d.dueDate = today();
+
+    const now = nowIso();
+    let a = d.id ? findAct(d.id) : null;
+    if (!a) {
+      a = { id: newId(), number: nextNumber(), createdAt: now, status: 'Pendente', statusManual: false, startDate: null,
+        realStartAt: null, completedAt: null, tags: [], archived: false, history: [{ timestamp: now, action: 'Atividade cadastrada' }] };
+      S.activities.unshift(a);
+    }
+    const wasDone = isDone(a);
+    a.title = d.title.trim();
+    a.dueDate = d.dueDate || null;
+    a.category = d.category || '';
+    a.priority = d.important ? (isImportant(a) ? a.priority : 'Alta') : (isImportant(a) ? 'Média' : (a.priority || 'Média'));
+    a.recurrence = d.recurrence.type === 'none' ? null : {
+      type: d.recurrence.type,
+      days: d.recurrence.type === 'days' ? [...d.recurrence.days].sort() : [],
+      dayOfMonth: d.recurrence.type === 'monthly' && a.dueDate ? parseYmd(a.dueDate).getDate() : null
+    };
+    a.description = d.description.trim();
+    a.subtasks = d.subtasks.map(s => ({ ...s, title: s.title.trim() }));
+    a.originNoteDate = d.originNoteDate || a.originNoteDate || null;
+    if (!Array.isArray(a.history)) a.history = [];
+
+    let spawned = null;
+    if (d.statusChoice === 'Concluída') {
+      if (!wasDone) spawned = completeActivity(a);
+    } else {
+      if (wasDone) reopenActivity(a);
+      if (d.statusChoice === 'auto') { a.statusManual = false; a.status = 'Pendente'; syncStatus(a); }
+      else {
+        a.statusManual = true; a.status = d.statusChoice;
+        if (d.statusChoice === 'Em andamento' && !a.realStartAt) a.realStartAt = now;
+      }
+    }
+    if (d.id) a.history.push({ timestamp: now, action: 'Atividade editada' });
+
+    closeSheet(true);
+    render();
+    const ok = await saveAct(a);
+    toast(!ok ? `Erro ao salvar (${lastError})` : spawned ? `Concluída! Próxima: ${dateLabel(spawned.dueDate)}` : 'Salvo ✓');
+  }
+
+  // ================= AÇÕES =================
+  async function toggleDone(id) {
+    const a = findAct(id); if (!a) return;
+    let spawned = null;
+    if (isDone(a)) reopenActivity(a);
+    else spawned = completeActivity(a);
+    render();
+    const ok = await saveAct(a);
+    if (!ok) toast(`Erro ao salvar (${lastError})`);
+    else if (spawned) toast(`Concluída! Próxima: ${dateLabel(spawned.dueDate)}`);
+    else toast(isDone(a) ? 'Concluída ✓' : 'Reaberta');
+  }
+
+  async function toggleStar(id) {
+    const a = findAct(id); if (!a) return;
+    a.priority = isImportant(a) ? 'Média' : 'Alta';
+    render();
+    if (!(await saveAct(a))) toast(`Erro ao salvar (${lastError})`);
+  }
+
+  async function quickAdd(title) {
+    const now = nowIso();
+    const a = { id: newId(), number: nextNumber(), title, category: S.catFilter !== 'ALL' ? S.catFilter : '', priority: 'Média',
+      status: 'Pendente', statusManual: false, createdAt: now, startDate: null, dueDate: today(), realStartAt: null,
+      completedAt: null, description: '', tags: [], subtasks: [], archived: false, originNoteDate: null, recurrence: null,
+      history: [{ timestamp: now, action: 'Atividade cadastrada' }] };
+    S.activities.unshift(a);
+    render();
+    const ok = await saveAct(a);
+    toast(ok ? 'Adicionada ✓' : `Erro ao salvar (${lastError})`);
+  }
+
+  function exportJSON() {
+    const data = { app: 'MinhaRotina', version: '2.0', exportedAt: nowIso(), categories: S.categories, activities: S.activities, dailyNotes: S.notes };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const el = document.createElement('a');
+    el.href = url; el.download = `backup_rotina_${today()}.json`;
+    document.body.appendChild(el); el.click(); el.remove();
+    URL.revokeObjectURL(url);
+    toast('Backup baixado ✓');
+  }
+
+  function importJSON(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      let data;
+      try { data = JSON.parse(reader.result); } catch { toast('Arquivo inválido'); return; }
+      if (!Array.isArray(data.activities)) { toast('Arquivo inválido'); return; }
+      confirmBox('Restaurar backup?', `Serão gravadas ${data.activities.length} atividades e ${Object.keys(data.dailyNotes || {}).length} anotações. Itens com o mesmo código serão substituídos.`, async () => {
+        toast('Restaurando...');
+        for (const c of (data.categories || [])) await saveCat(c);
+        for (const a of data.activities) await saveAct(a);
+        for (const [d, n] of Object.entries(data.dailyNotes || {})) await saveNote(d, n);
+        toast('Backup restaurado ✓');
+      }, 'Restaurar');
+    };
+    reader.readAsText(file);
+  }
+
+  // ================= EVENTOS =================
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-action]');
+    if (!el) {
+      if (e.target.id === 'sheet') closeSheet();
+      if (e.target.id === 'confirm') closeConfirm(false);
+      return;
+    }
+    const act = el.dataset.action;
+    const id = el.dataset.id;
+    switch (act) {
+      case 'view': setView(el.dataset.view); break;
+      case 'new': openSheet(); break;
+      case 'open': openSheet(id); break;
+      case 'toggle': e.stopPropagation(); toggleDone(id); break;
+      case 'star': e.stopPropagation(); toggleStar(id); break;
+      case 'cat': S.catFilter = el.dataset.cat; render(); break;
+      case 'toggle-done-today': S.showDoneToday = !S.showDoneToday; render(); break;
+      case 'more-done': S.doneLimit += 60; render(); break;
+      case 'toggle-search': {
+        const w = document.getElementById('search-wrap');
+        w.classList.toggle('hidden');
+        if (!w.classList.contains('hidden')) document.getElementById('search-input').focus();
+        else { S.search = ''; document.getElementById('search-input').value = ''; render(); }
+        break;
+      }
+      case 'open-note': S.search = ''; document.getElementById('search-input').value = ''; S.view = 'notas'; pickDay(el.dataset.date); render(); break;
+      // calendário
+      case 'cal-prev': S.calMonth--; if (S.calMonth < 0) { S.calMonth = 11; S.calYear--; } renderNotas(); break;
+      case 'cal-next': S.calMonth++; if (S.calMonth > 11) { S.calMonth = 0; S.calYear++; } renderNotas(); break;
+      case 'cal-today': pickDay(today()); break;
+      case 'pick-day': pickDay(el.dataset.date); break;
+      case 'note-to-task': {
+        const ta = document.getElementById('note-text');
+        let txt = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+        if (!txt) txt = (ta.value.split('\n').find(l => l.trim()) || '').trim();
+        flushNote();
+        openSheet(null, { title: txt.slice(0, 200), dueDate: S.noteDate >= today() ? S.noteDate : today(), originNoteDate: S.noteDate,
+          description: txt.length > 200 ? txt : '' });
+        break;
+      }
+      // janela
+      case 'sheet-close': closeSheet(); break;
+      case 'sheet-save': saveSheet(); break;
+      case 'sheet-delete': {
+        const did = draft && draft.id;
+        if (!did) return;
+        confirmBox('Excluir atividade?', 'Ela será apagada definitivamente.', async () => {
+          S.activities = S.activities.filter(a => a.id !== did);
+          closeSheet(true); render();
+          toast((await delAct(did)) ? 'Excluída' : `Erro ao excluir (${lastError})`);
+        }, 'Excluir');
+        break;
+      }
+      case 'sh-date': readSheet(); draft.dueDate = el.dataset.val; renderSheet(); break;
+      case 'sh-day': {
+        readSheet();
+        const n = Number(el.dataset.day);
+        const days = draft.recurrence.days;
+        draft.recurrence.days = days.includes(n) ? days.filter(x => x !== n) : [...days, n];
+        renderSheet(); break;
+      }
+      case 'sh-status': readSheet(); draft.statusChoice = el.dataset.val; renderSheet(); break;
+      case 'sh-star': readSheet(); draft.important = !draft.important; renderSheet(); break;
+      case 'sh-sub-toggle': {
+        readSheet();
+        const s = draft.subtasks.find(x => x.id === el.dataset.sid);
+        if (s) { s.status = s.status === 'done' ? 'pending' : 'done'; s.completedAt = s.status === 'done' ? nowIso() : null; }
+        renderSheet(); break;
+      }
+      case 'sh-sub-del': readSheet(); draft.subtasks = draft.subtasks.filter(x => x.id !== el.dataset.sid); renderSheet(); break;
+      // confirmação
+      case 'confirm-yes': closeConfirm(true); break;
+      case 'confirm-no': closeConfirm(false); break;
+      // configurações
+      case 'del-cat': {
+        const c = S.categories.find(x => x.id === id); if (!c) return;
+        confirmBox(`Excluir "${c.name}"?`, 'As atividades dessa categoria não serão apagadas.', async () => {
+          S.categories = S.categories.filter(x => x.id !== id);
+          if (S.catFilter === c.name) S.catFilter = 'ALL';
+          render();
+          toast((await delCat(id)) ? 'Categoria excluída' : `Erro (${lastError})`);
+        }, 'Excluir');
+        break;
+      }
+      case 'restore-archived':
+        S.activities.filter(a => a.archived).forEach(a => { a.archived = false; saveAct(a); });
+        render(); toast('Atividades restauradas'); break;
+      case 'export': exportJSON(); break;
+    }
+  });
+
+  document.addEventListener('change', e => {
+    if (e.target.id === 'sh-rec') {
+      readSheet();
+      draft.recurrence.type = e.target.value;
+      if (draft.recurrence.type === 'days' && !draft.recurrence.days.length) {
+        draft.recurrence.days = [parseYmd(draft.dueDate || today()).getDay()];
+      }
+      renderSheet();
+    }
+    if (e.target.id === 'import-input' && e.target.files[0]) { importJSON(e.target.files[0]); e.target.value = ''; }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.id === 'sh-sub-new') { e.preventDefault(); addDraftSubtask(); }
+    else if (e.key === 'Enter' && e.target.id === 'sh-title') { e.preventDefault(); saveSheet(); }
+    if (e.key === 'Escape') {
+      if (!document.getElementById('confirm').classList.contains('hidden')) closeConfirm(false);
+      else if (draft) closeSheet();
+    }
+  });
+
+  document.getElementById('quick-add').addEventListener('submit', e => {
+    e.preventDefault();
+    const inp = document.getElementById('quick-add-input');
+    const v = inp.value.trim();
+    if (!v) return;
+    inp.value = '';
+    quickAdd(v);
+  });
+
+  document.getElementById('cat-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const inp = document.getElementById('cat-input');
+    const name = inp.value.trim();
+    if (!name) return;
+    if (S.categories.some(c => c.name.toLowerCase() === name.toLowerCase())) { toast('Essa categoria já existe'); return; }
+    const c = { id: 'cat-' + Date.now(), name };
+    S.categories.push(c);
+    S.categories.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    inp.value = '';
+    render();
+    toast((await saveCat(c)) ? `Categoria "${name}" criada` : `Erro (${lastError})`);
+  });
+
+  document.getElementById('search-input').addEventListener('input', e => { S.search = e.target.value; render(); });
+
+  document.getElementById('note-text').addEventListener('input', () => {
+    noteDirty = true;
+    document.getElementById('note-status').textContent = 'Salvando...';
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(flushNote, 800);
+  });
+  window.addEventListener('beforeunload', () => { if (noteDirty) flushNote(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && noteDirty) flushNote(); });
+
+  // Atualiza "Hoje"/"Atrasada" quando o dia vira com o app aberto
+  let lastDay = today();
+  setInterval(() => { if (today() !== lastDay) { lastDay = today(); render(); } }, 60000);
+
+  // ================= INÍCIO =================
+  paintStaticIcons();
+  render();
+  initCloud();
+</script>
+</body>
+</html>

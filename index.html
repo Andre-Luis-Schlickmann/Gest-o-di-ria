@@ -72,8 +72,8 @@
 </head>
 <body class="h-full flex overflow-hidden text-slate-800 bg-slate-50 antialiased selection:bg-brand-100 selection:text-brand-900">
 
-  <!-- AUTHENTICATION GATE (Restrito para andre.schlickmann@grupotbx.com.br) -->
-  <div id="auth-gate-overlay" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+  <!-- AUTHENTICATION GATE (login com qualquer conta Google) -->
+  <div id="auth-gate-overlay" class="hidden fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl border border-slate-200/80 w-full max-w-md p-8 text-center relative overflow-hidden">
       <!-- Top Accent Bar -->
       <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-brand-600 via-blue-500 to-indigo-600"></div>
@@ -88,15 +88,11 @@
       <div class="my-6 p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-left">
         <div class="flex items-center gap-2 text-slate-700 font-semibold text-xs mb-1">
           <i data-lucide="lock" class="w-3.5 h-3.5 text-brand-600"></i>
-          <span>Acesso Privado e Restrito</span>
+          <span>Acesso com Conta Google</span>
         </div>
         <p class="text-[11px] text-slate-500 leading-relaxed">
-          Este sistema está parametrizado exclusivamente para o usuário:
+          Entre com qualquer conta Google para acessar o sistema.
         </p>
-        <div class="mt-2 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg font-mono text-[11px] text-brand-700 font-semibold truncate flex items-center gap-1.5">
-          <i data-lucide="mail" class="w-3 h-3 text-slate-400"></i>
-          <span>andre.schlickmann@grupotbx.com.br</span>
-        </div>
       </div>
 
       <!-- Error banner if unauthorized account logs in -->
@@ -288,7 +284,7 @@
         <!-- Categories Section -->
         <div>
           <div class="flex items-center justify-between px-3 mb-1 cursor-pointer select-none rounded-lg hover:bg-slate-50 transition" onclick="toggleSidebarCategories()">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Categorias (14)</span>
+            <span id="sidebar-categories-title" class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Categorias (14)</span>
             <div class="flex items-center gap-1.5">
               <button onclick="event.stopPropagation(); openCategoryManageModal()" title="Gerenciar Categorias" class="text-slate-400 hover:text-slate-600">
                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -309,15 +305,12 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div id="cloud-status-dot" class="w-2 h-2 rounded-full bg-amber-400" title="Conectando ao armazenamento"></div>
-            <span id="cloud-status-text" class="font-medium text-slate-600">Autenticando...</span>
+            <span id="cloud-status-text" class="font-medium text-slate-600">Conectando...</span>
           </div>
           <span id="system-time-display" class="font-mono text-[11px] text-slate-400">--:--</span>
         </div>
         <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono">
-          <span class="truncate max-w-[190px]" id="cloud-user-id" title="Usuário Autenticado">Aguardando login...</span>
-          <button type="button" onclick="handleLogout()" title="Sair da Conta" class="text-slate-400 hover:text-rose-600 p-1 rounded hover:bg-slate-100 transition">
-            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-          </button>
+          <span class="truncate max-w-[190px]" id="cloud-user-id" title="Acesso público">Conectando...</span>
         </div>
       </div>
     </aside>
@@ -874,13 +867,14 @@
     </div>
 
     <!-- Slide-over Right Details Panel (Non-intrusive context preserving) -->
-    <div id="details-panel" class="fixed inset-y-0 right-0 z-50 w-full sm:w-[500px] lg:w-[540px] bg-white border-l border-slate-200/80 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+    <div id="details-panel" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden" onclick="if (event.target === this) closeDetailsPanel()">
+     <div class="bg-white w-full max-w-2xl rounded-xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
       
       <!-- Details Panel Header -->
       <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
         <div class="flex items-center gap-2">
-          <span id="detail-code-badge" class="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-brand-50 text-brand-700 border border-brand-200">ATIV-000</span>
-          <span id="detail-status-badge" class="text-xs px-2 py-0.5 rounded-full font-semibold">Pendente</span>
+          <span id="detail-code-badge" class="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-brand-50 text-brand-700 border border-brand-200">Nº 00</span>
+          <span id="detail-status-holder"></span>
         </div>
         <div class="flex items-center gap-1">
           <button onclick="editCurrentDetailActivity()" class="p-1.5 text-slate-500 hover:text-brand-600 hover:bg-slate-100 rounded-lg" title="Editar Atividade">
@@ -999,16 +993,6 @@
           </div>
         </div>
 
-        <!-- Notes / Observations -->
-        <div class="space-y-3">
-          <div>
-            <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Observações Internas</h5>
-            <div id="detail-observations" class="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
-              Nenhuma observação interna adicional.
-            </div>
-          </div>
-        </div>
-
         <!-- Audit History Log of this Activity -->
         <div>
           <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Histórico de Alterações</h5>
@@ -1026,6 +1010,7 @@
         </div>
       </div>
 
+     </div>
     </div>
 
     <!-- MODAL: Nova / Editar Atividade -->
@@ -1080,11 +1065,6 @@
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Descrição Detalhada</label>
             <textarea id="form-description" rows="3" placeholder="Detalhes operacionais, requisitos e escopo da atividade..." class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none"></textarea>
-          </div>
-
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">Observações Internas (Opcional)</label>
-            <input type="text" id="form-observations" placeholder="Notas complementares, contatos de fornecedores..." class="w-full text-xs px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-brand-500/20 focus:outline-none">
           </div>
 
           <div>
@@ -1262,13 +1242,22 @@
       getAuth, 
       GoogleAuthProvider, 
       signInWithPopup, 
+      signInWithRedirect,
+      signInAnonymously,
       signOut, 
       onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // E-mail estritamente autorizado
-    const ALLOWED_EMAIL = "andre.schlickmann@grupotbx.com.br";
+    // MODO DE DADOS:
+    //  true  = todos os usuários logados veem e editam os MESMOS dados (comportamento atual)
+    //  false = cada conta Google tem seus próprios dados, separados pelo UID
+    const SHARED_DATA = true; // acesso público: todos que têm o link usam os mesmos dados
+    function dataPath() {
+      return SHARED_DATA
+        ? ['artifacts', appId, 'public', 'data']
+        : ['artifacts', appId, 'users', currentUserId];
+    }
 
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'gestao-diaria-1ab71';
 
@@ -1352,18 +1341,21 @@
     }
 
     function lockAppUI() {
-      const overlay = document.getElementById('auth-gate-overlay');
-      if (overlay) overlay.classList.remove('hidden');
-      document.getElementById('cloud-status-text').textContent = 'Acesso Bloqueado';
+      document.getElementById('cloud-status-text').textContent = 'Conectando...';
       document.getElementById('cloud-status-dot').className = 'w-2 h-2 rounded-full bg-rose-500';
-      document.getElementById('cloud-user-id').textContent = 'Não autenticado';
+      document.getElementById('cloud-user-id').textContent = 'Acesso público';
       
       // Cancel active listeners if logged out
       if (unsubCategories) unsubCategories();
       if (unsubActivities) unsubActivities();
       if (unsubNotes) unsubNotes();
+      unsubCategories = unsubActivities = unsubNotes = null;
+      currentUser = null;
+      currentUserId = null;
+      isCloudReady = false;
       
       AppState.activities = [];
+      AppState.categories = [...INITIAL_CATEGORIES];
       AppState.dailyNotes = {};
       refreshAppViews();
     }
@@ -1374,9 +1366,8 @@
       hideAuthError();
       document.getElementById('cloud-status-text').textContent = 'Salvo na Nuvem';
       document.getElementById('cloud-status-dot').className = 'w-2 h-2 rounded-full bg-emerald-500';
-      document.getElementById('cloud-user-id').textContent = user.email;
-      document.getElementById('cloud-user-id').title = `E-mail autorizado: ${user.email} (UID: ${user.uid})`;
-      showToast(`Bem-vindo, ${user.displayName || user.email}!`);
+      document.getElementById('cloud-user-id').textContent = 'Acesso público (sem login)';
+      document.getElementById('cloud-user-id').title = 'Qualquer pessoa com o link acessa estes dados';
     }
 
     async function handleGoogleLogin() {
@@ -1387,22 +1378,24 @@
       try {
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        const result = await signInWithPopup(auth, provider);
-        const email = (result.user?.email || '').trim().toLowerCase();
-
-        if (email !== ALLOWED_EMAIL.toLowerCase()) {
-          await signOut(auth);
-          showAuthError(`Acesso negado para o e-mail: ${result.user?.email || 'Desconhecido'}. Este sistema é exclusivo de ${ALLOWED_EMAIL}.`);
-          btnText.textContent = 'Entrar com Conta Google';
-          return;
-        }
+        await signInWithPopup(auth, provider);
 
         btnText.textContent = 'Entrar com Conta Google';
       } catch (err) {
         console.error("Erro no login Google:", err);
         btnText.textContent = 'Entrar com Conta Google';
-        if (err.code === 'auth/popup-blocked') {
-          showAuthError('O popup de login foi bloqueado pelo seu navegador. Por favor, permita popups para este site.');
+        if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
+          // Celulares/navegadores que bloqueiam popup: usa redirecionamento
+          try {
+            const provider = new GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+            await signInWithRedirect(auth, provider);
+            return;
+          } catch (e2) {
+            showAuthError('O popup de login foi bloqueado pelo seu navegador. Por favor, permita popups para este site.');
+          }
+        } else if (err.code === 'auth/unauthorized-domain') {
+          showAuthError('Este domínio não está autorizado no Firebase. Adicione-o em Authentication > Settings > Authorized domains.');
         } else if (err.code === 'auth/popup-closed-by-user') {
           showAuthError('Janela de login fechada antes da confirmação.');
         } else {
@@ -1426,7 +1419,7 @@
     async function saveActivityCloud(activity) {
       if (!isCloudReady || !currentUser || !db) { lastCloudError = 'sem login/conexão com a nuvem'; return false; }
       try {
-        const activityDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'activities', activity.id);
+        const activityDocRef = doc(db, ...dataPath(), 'activities', activity.id);
         await setDoc(activityDocRef, cleanForFirestore(activity));
         return true;
       } catch (err) {
@@ -1439,7 +1432,7 @@
     async function deleteActivityCloud(activityId) {
       if (!isCloudReady || !currentUser || !db) return false;
       try {
-        const activityDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'activities', activityId);
+        const activityDocRef = doc(db, ...dataPath(), 'activities', activityId);
         await deleteDoc(activityDocRef);
         return true;
       } catch (err) {
@@ -1451,7 +1444,7 @@
     async function saveNoteCloud(dateStr, noteData) {
       if (!isCloudReady || !currentUser || !db) { lastCloudError = 'sem login/conexão com a nuvem'; return false; }
       try {
-        const noteDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'dailyNotes', dateStr);
+        const noteDocRef = doc(db, ...dataPath(), 'dailyNotes', dateStr);
         await setDoc(noteDocRef, cleanForFirestore(noteData));
         return true;
       } catch (err) {
@@ -1464,7 +1457,7 @@
     async function deleteNoteCloud(dateStr) {
       if (!isCloudReady || !currentUser || !db) return false;
       try {
-        const noteDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'dailyNotes', dateStr);
+        const noteDocRef = doc(db, ...dataPath(), 'dailyNotes', dateStr);
         await deleteDoc(noteDocRef);
         return true;
       } catch (err) {
@@ -1476,7 +1469,7 @@
     async function saveCategoryCloud(category) {
       if (!isCloudReady || !currentUser || !db) return false;
       try {
-        const catDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', category.id);
+        const catDocRef = doc(db, ...dataPath(), 'categories', category.id);
         await setDoc(catDocRef, category);
         return true;
       } catch (err) {
@@ -1488,7 +1481,7 @@
     async function deleteCategoryCloud(categoryId) {
       if (!isCloudReady || !currentUser || !db) return false;
       try {
-        const catDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'categories', categoryId);
+        const catDocRef = doc(db, ...dataPath(), 'categories', categoryId);
         await deleteDoc(catDocRef);
         return true;
       } catch (err) {
@@ -1498,12 +1491,15 @@
     }
 
     function startFirestoreSync() {
+      if (unsubCategories) unsubCategories();
+      if (unsubActivities) unsubActivities();
+      if (unsubNotes) unsubNotes();
       // 1. Synchronize Categories (Rule 1 & Rule 2)
-      const catCol = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
+      const catCol = collection(db, ...dataPath(), 'categories');
       unsubCategories = onSnapshot(catCol, async (snapshot) => {
         if (snapshot.empty) {
           for (const cat of INITIAL_CATEGORIES) {
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id), cat);
+            await setDoc(doc(db, ...dataPath(), 'categories', cat.id), cat);
           }
         } else {
           const list = [];
@@ -1514,7 +1510,7 @@
       }, (err) => console.error("Erro ao sincronizar categorias:", err));
 
       // 2. Synchronize Activities (Rule 1 & Rule 2)
-      const actCol = collection(db, 'artifacts', appId, 'public', 'data', 'activities');
+      const actCol = collection(db, ...dataPath(), 'activities');
       unsubActivities = onSnapshot(actCol, (snapshot) => {
         const list = [];
         snapshot.forEach(d => list.push(d.data()));
@@ -1523,7 +1519,7 @@
       }, (err) => console.error("Erro ao sincronizar atividades:", err));
 
       // 3. Synchronize Daily Notes (Rule 1 & Rule 2)
-      const notesCol = collection(db, 'artifacts', appId, 'public', 'data', 'dailyNotes');
+      const notesCol = collection(db, ...dataPath(), 'dailyNotes');
       unsubNotes = onSnapshot(notesCol, (snapshot) => {
         const notesMap = {};
         snapshot.forEach(d => {
@@ -1542,22 +1538,24 @@
 
         // Monitor de autenticação Google em tempo real
         onAuthStateChanged(auth, async (user) => {
-          if (user && user.email) {
-            const email = user.email.trim().toLowerCase();
-            if (email === ALLOWED_EMAIL.toLowerCase()) {
-              currentUser = user;
-              currentUserId = user.uid;
-              isCloudReady = true;
-              unlockAppUI(user);
-              startFirestoreSync();
-            } else {
-              // Conta incorreta: desloga imediatamente
-              await signOut(auth);
-              showAuthError(`Acesso bloqueado: o e-mail ${user.email} não possui autorização. O sistema é exclusivo de ${ALLOWED_EMAIL}.`);
-              lockAppUI();
-            }
+          if (user) {
+            currentUser = user;
+            currentUserId = user.uid;
+            isCloudReady = true;
+            unlockAppUI(user);
+            startFirestoreSync();
           } else {
             lockAppUI();
+            // Sem login: entra automaticamente de forma anônima
+            signInAnonymously(auth).catch((err) => {
+              console.error('Falha no acesso anônimo:', err);
+              document.getElementById('cloud-status-text').textContent = 'Erro de conexão';
+              document.getElementById('cloud-status-dot').className = 'w-2 h-2 rounded-full bg-rose-500';
+              const hint = err.code === 'auth/admin-restricted-operation' || err.code === 'auth/operation-not-allowed'
+                ? 'Ative o login Anônimo no Firebase (Authentication > Sign-in method > Anonymous).'
+                : (err.code || err.message);
+              showToast('Erro ao conectar: ' + hint);
+            });
           }
         });
 
@@ -1574,6 +1572,21 @@
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    // Evita que textos digitados (títulos, notas) sejam interpretados como HTML
+    function esc(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // Converte um ISO (UTC) para a data LOCAL yyyy-mm-dd (evita erro após 21h no Brasil)
+    function toLocalDateString(iso) {
+      if (!iso) return null;
+      const d = new Date(iso);
+      if (isNaN(d)) return String(iso).split('T')[0];
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
     function formatDateTimeBR(dateIsoString) {
@@ -1598,10 +1611,78 @@
       return dateString;
     }
 
-    function isOverdue(activity) {
-      if (activity.status === 'Concluída' || !activity.dueDate || activity.archived) return false;
+    const STATUS_STYLES = {
+      'Pendente':     { card: 'bg-amber-50',   border: 'border-amber-200 hover:border-amber-300',     badge: 'bg-amber-100 text-amber-800 border-amber-300',     dot: 'bg-amber-500' },
+      'Em andamento': { card: 'bg-blue-50',    border: 'border-blue-200 hover:border-blue-300',       badge: 'bg-blue-100 text-blue-800 border-blue-300',       dot: 'bg-blue-600' },
+      'Concluída':    { card: 'bg-emerald-50', border: 'border-emerald-200 hover:border-emerald-300', badge: 'bg-emerald-100 text-emerald-800 border-emerald-300', dot: 'bg-emerald-500' },
+      'Atrasada':     { card: 'bg-rose-50',    border: 'border-rose-200 hover:border-rose-300',       badge: 'bg-rose-100 text-rose-800 border-rose-300',       dot: 'bg-rose-500' }
+    };
+
+    function getStatusStyle(status) {
+      return STATUS_STYLES[status] || STATUS_STYLES['Pendente'];
+    }
+
+    // Status automático pela data: passou do prazo = Atrasada; chegou a data de início = Em andamento
+    function computeAutoStatus(a) {
       const today = getTodayString();
-      return activity.dueDate < today;
+      if (a.dueDate && a.dueDate < today) return 'Atrasada';
+      if (a.startDate && a.startDate <= today) return 'Em andamento';
+      if (!a.startDate && a.dueDate && a.dueDate === today) return 'Em andamento';
+      return 'Pendente';
+    }
+
+    // Concluída e status definido manualmente são preservados; o resto segue a data
+    // Converte nomes de status em inglês (dados antigos) para os nomes em português
+    function normalizeStatusName(value) {
+      const key = String(value || '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+      const map = {
+        pending: 'Pendente', pendente: 'Pendente', todo: 'Pendente', to_do: 'Pendente',
+        in_progress: 'Em andamento', inprogress: 'Em andamento', doing: 'Em andamento', em_andamento: 'Em andamento',
+        completed: 'Concluída', complete: 'Concluída', done: 'Concluída', concluida: 'Concluída', 'concluída': 'Concluída',
+        overdue: 'Atrasada', late: 'Atrasada', atrasada: 'Atrasada'
+      };
+      return map[key] || value || 'Pendente';
+    }
+
+    function syncActivityStatus(a) {
+      if (!a) return;
+      if (!Array.isArray(a.history)) a.history = [];
+      if (!Array.isArray(a.subtasks)) a.subtasks = [];
+      a.status = normalizeStatusName(a.status);
+      if (a.status === 'Concluída') return;
+      if (a.statusManual === true) return;
+      a.status = computeAutoStatus(a);
+    }
+
+    function syncAllActivityStatuses() {
+      AppState.activities.forEach(syncActivityStatus);
+    }
+
+    function formatActivityNumber(a) {
+      if (!a || !a.number) return '--';
+      return String(a.number).padStart(2, '0');
+    }
+
+    function getNextActivityNumber() {
+      return AppState.activities.reduce((max, a) => Math.max(max, Number(a.number) || 0), 0) + 1;
+    }
+
+    // Atividades antigas (sem número) recebem numeração sequencial por ordem de criação
+    function ensureActivityNumbers() {
+      if (!isCloudReady || !currentUser) return;
+      const missing = AppState.activities.filter(a => !a.number);
+      if (missing.length === 0) return;
+      missing.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+      let next = getNextActivityNumber();
+      missing.forEach(a => {
+        a.number = next++;
+        saveActivityCloud(a);
+      });
+    }
+
+    function isOverdue(activity) {
+      if (activity.archived) return false;
+      return activity.status === 'Atrasada';
     }
 
     function isDueToday(activity) {
@@ -1611,7 +1692,7 @@
 
     function isCompletedToday(activity) {
       if (activity.status !== 'Concluída' || !activity.completedAt) return false;
-      const completionDay = activity.completedAt.split('T')[0];
+      const completionDay = toLocalDateString(activity.completedAt);
       return completionDay === getTodayString();
     }
 
@@ -1732,7 +1813,7 @@
           const matchTitle = act.title.toLowerCase().includes(q);
           const matchDesc = (act.description || '').toLowerCase().includes(q);
           const matchCat = act.category.toLowerCase().includes(q);
-          const matchCode = act.id.toLowerCase().includes(q);
+          const matchCode = formatActivityNumber(act).includes(q.replace(/^n?º?\s*/, '')) || act.id.toLowerCase().includes(q);
           const matchTags = (act.tags || []).some(t => t.toLowerCase().includes(q));
           if (!matchTitle && !matchDesc && !matchCat && !matchCode && !matchTags) return false;
         }
@@ -1806,6 +1887,9 @@
       selectCatFilter.innerHTML = '<option value="ALL">Todas as Categorias</option>';
       if (settingsTable) settingsTable.innerHTML = '';
 
+      const catTitle = document.getElementById('sidebar-categories-title');
+      if (catTitle) catTitle.textContent = `Categorias (${AppState.categories.length})`;
+
       AppState.categories.forEach(cat => {
         const catTasksCount = AppState.activities.filter(a => !a.archived && a.category === cat.name).length;
 
@@ -1814,7 +1898,7 @@
         catBtn.className = `w-full flex items-center justify-between px-3 py-1.5 text-xs rounded-lg transition ${isActive ? 'bg-slate-200/80 text-slate-900 font-semibold' : 'text-slate-600 hover:bg-slate-100'}`;
         catBtn.onclick = () => setCategoryFilter(cat.name);
         catBtn.innerHTML = `
-          <span class="truncate">${cat.name}</span>
+          <span class="truncate">${esc(cat.name)}</span>
           <span class="text-[10px] text-slate-400 font-medium">${catTasksCount}</span>
         `;
         container.appendChild(catBtn);
@@ -1835,7 +1919,7 @@
           row.className = 'flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs';
           row.innerHTML = `
             <div class="flex items-center gap-2">
-              <span class="font-medium text-slate-800">${cat.name}</span>
+              <span class="font-medium text-slate-800">${esc(cat.name)}</span>
               <span class="text-[10px] text-slate-400">(${catTasksCount} atividades associadas)</span>
             </div>
             <button onclick="confirmDeleteCategory('${cat.id}')" class="text-slate-400 hover:text-rose-600" title="Excluir Categoria">
@@ -1853,6 +1937,17 @@
       if (window.lucide) lucide.createIcons();
     }
 
+    function buildStatusSelectHTML(activity, onchangeCode, sizeClasses) {
+      const st = getStatusStyle(activity.status);
+      const opts = ['Pendente', 'Em andamento', 'Concluída', 'Atrasada'].map(v =>
+        `<option value="${v}" ${activity.status === v ? 'selected' : ''}>${v}</option>`
+      ).join('');
+      return `<select title="Alterar status manualmente" onchange="${onchangeCode}" class="${sizeClasses} font-semibold rounded-full border cursor-pointer focus:outline-none ${st.badge}">
+        ${opts}
+        <option value="auto">↺ Automático (pela data)</option>
+      </select>`;
+    }
+
     function createActivityCardHTML(activity) {
       const isDone = activity.status === 'Concluída';
       const overdue = isOverdue(activity);
@@ -1863,47 +1958,32 @@
 
       const priorityClass = getPriorityBadgeClass(activity.priority, isDone);
 
-      let statusClass = 'bg-amber-100 text-amber-800 border-amber-300';
-      let cardBg = 'bg-amber-50';
-      let cardBorder = 'border-amber-200 hover:border-amber-300';
-      if (activity.status === 'Em andamento') {
-        statusClass = 'bg-blue-100 text-blue-800 border-blue-300';
-        cardBg = 'bg-blue-50';
-        cardBorder = 'border-blue-200 hover:border-blue-300';
-      }
-      if (isDone) {
-        statusClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
-        cardBg = 'bg-emerald-50';
-        cardBorder = 'border-emerald-200 hover:border-emerald-300';
-      }
-
-      let cardStyle = `${cardBg} ${cardBorder} hover:shadow-md`;
-      if (isDone) {
-        cardStyle = `${cardBg} ${cardBorder} opacity-70 hover:opacity-100 shadow-none`;
-      } else if (overdue) {
-        cardStyle = `${cardBg} border-rose-300 shadow-rose-100/50 hover:border-rose-400 hover:shadow-md`;
-      }
+      const st = getStatusStyle(activity.status);
+      const statusClass = st.badge;
+      let cardStyle = `${st.card} ${st.border} hover:shadow-md`;
+      if (isDone) cardStyle = `${st.card} ${st.border} opacity-80 hover:opacity-100 shadow-none`;
 
       return `
         <div onclick="openActivityDetails('${activity.id}')" class="group rounded-xl border transition-all duration-200 p-4 cursor-pointer relative flex flex-col justify-between ${cardStyle}">
           <div>
             <div class="flex items-center justify-between gap-1.5 mb-2.5">
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded ${isDone ? 'bg-slate-100/80 text-slate-400' : 'bg-slate-100 text-slate-600'}">${activity.id}</span>
+                <span class="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded ${isDone ? 'bg-white/60 text-slate-500' : 'bg-white/70 text-slate-700'}">Nº ${formatActivityNumber(activity)}</span>
                 <span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/70 ${isDone ? 'opacity-70' : ''}">
-                  ${activity.category}
+                  ${esc(activity.category)}
                 </span>
                 <span class="text-[10px] px-2 py-0.5 rounded-md border ${priorityClass}">
-                  ${activity.priority}
+                  ${esc(activity.priority)}
                 </span>
               </div>
-              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusClass}">
-                ${activity.status}
-              </span>
+              <div class="flex items-center gap-1" onclick="event.stopPropagation()">
+                ${activity.statusManual === true && !isDone ? '<span title="Status definido manualmente" class="text-slate-400"><i data-lucide="pin" class="w-3 h-3"></i></span>' : ''}
+                ${buildStatusSelectHTML(activity, `changeActivityStatus('${activity.id}', this.value)`, 'text-[10px] px-2 py-0.5')}
+              </div>
             </div>
 
             <h4 class="text-xs leading-snug transition line-clamp-2 ${isDone ? 'line-through text-slate-400 font-medium' : 'font-bold text-slate-900 group-hover:text-brand-600'}">
-              ${activity.title}
+              ${esc(activity.title)}
             </h4>
 
             <div class="flex items-center gap-2 mt-2.5 text-[11px]">
@@ -1929,7 +2009,7 @@
           </div>
 
           <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-slate-400" onclick="event.stopPropagation()">
-            <span class="text-[10px] text-slate-400 font-medium">Criada: ${formatDateBR(activity.createdAt.split('T')[0])}</span>
+            <span class="text-[10px] text-slate-400 font-medium">Criada: ${formatDateBR(toLocalDateString(activity.createdAt))}</span>
             <div class="flex items-center gap-1">
               ${!isDone ? `
                 <button onclick="toggleActivityComplete('${activity.id}')" title="Marcar como Concluída" class="p-1 hover:text-emerald-600 hover:bg-emerald-50 rounded">
@@ -2005,7 +2085,7 @@
       const today = getTodayString();
       const in7DaysDate = new Date();
       in7DaysDate.setDate(in7DaysDate.getDate() + 7);
-      const in7Days = in7DaysDate.toISOString().split('T')[0];
+      const in7Days = toLocalDateString(in7DaysDate.toISOString());
 
       const activeActs = AppState.activities.filter(a => !a.archived);
 
@@ -2015,6 +2095,7 @@
           allSubtasks.push({
             ...sub,
             activityId: act.id,
+            activityNumber: formatActivityNumber(act),
             activityTitle: act.title,
             activityCategory: act.category,
             activityPriority: act.priority,
@@ -2030,7 +2111,7 @@
       document.getElementById('badge-subtasks-today').textContent = todayList.length;
       document.getElementById('badge-subtasks-week').textContent = weekList.length;
       document.getElementById('badge-subtasks-all').textContent = allPendingList.length;
-      document.getElementById('badge-subtasks-total-count').textContent = todayList.length + weekList.length;
+      document.getElementById('badge-subtasks-total-count').textContent = new Set([...todayList, ...weekList].map(s => s.activityId + '|' + s.id)).size;
 
       let displayList = [];
       if (AppState.subtasksWidgetTab === 'today') {
@@ -2090,14 +2171,14 @@
               />
               <div class="min-w-0 flex-1">
                 <div class="text-xs font-semibold transition truncate ${isDone ? 'line-through text-slate-400' : 'text-slate-800 group-hover:text-brand-600'}">
-                  ${sub.title}
+                  ${esc(sub.title)}
                 </div>
                 <div class="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5 truncate">
-                  <span class="font-mono font-bold text-slate-500">${sub.activityId}</span>
+                  <span class="font-mono font-bold text-slate-500">Nº ${sub.activityNumber}</span>
                   <span>•</span>
-                  <span class="truncate max-w-[200px] sm:max-w-sm text-slate-600 font-medium">${sub.activityTitle}</span>
+                  <span class="truncate max-w-[200px] sm:max-w-sm text-slate-600 font-medium">${esc(sub.activityTitle)}</span>
                   <span>•</span>
-                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">${sub.activityCategory}</span>
+                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">${esc(sub.activityCategory)}</span>
                 </div>
               </div>
             </div>
@@ -2171,22 +2252,22 @@
           const doneSubs = (act.subtasks || []).filter(s => s.status === 'done').length;
 
           return `
-            <tr onclick="openActivityDetails('${act.id}')" class="${isDone ? 'opacity-60 bg-slate-50/70 hover:opacity-100' : 'hover:bg-slate-50'} cursor-pointer transition">
-              <td class="py-2.5 px-4">
-                <span class="inline-block w-2.5 h-2.5 rounded-full ${isDone ? 'bg-emerald-500' : act.status === 'Em andamento' ? 'bg-blue-600' : 'bg-amber-500'}"></span>
+            <tr onclick="openActivityDetails('${act.id}')" class="${getStatusStyle(act.status).card} ${isDone ? 'opacity-80 hover:opacity-100' : 'hover:brightness-95'} cursor-pointer transition">
+              <td class="py-2.5 px-4" onclick="event.stopPropagation()">
+                ${buildStatusSelectHTML(act, `changeActivityStatus('${act.id}', this.value)`, 'text-[10px] px-2 py-0.5')}
               </td>
               <td class="py-2.5 px-4">
-                <div class="${isDone ? 'line-through text-slate-400 font-medium' : 'font-bold text-slate-900'}">${act.title}</div>
-                <span class="font-mono text-[10px] text-slate-400">${act.id}</span>
+                <div class="${isDone ? 'line-through text-slate-400 font-medium' : 'font-bold text-slate-900'}">${esc(act.title)}</div>
+                <span class="font-mono text-[10px] text-slate-500">Nº ${formatActivityNumber(act)}</span>
               </td>
               <td class="py-2.5 px-4">
                 <span class="text-[10px] px-2 py-0.5 rounded font-medium bg-slate-100 text-slate-600 border border-slate-200 ${isDone ? 'opacity-70' : ''}">
-                  ${act.category}
+                  ${esc(act.category)}
                 </span>
               </td>
               <td class="py-2.5 px-4">
                 <span class="text-[10px] px-2 py-0.5 rounded-md border ${getPriorityBadgeClass(act.priority, isDone)}">
-                  ${act.priority}
+                  ${esc(act.priority)}
                 </span>
               </td>
               <td class="py-2.5 px-4">
@@ -2257,7 +2338,7 @@
         const isToday = dayStr === todayStr;
         const isSelected = dayStr === AppState.selectedCalendarDate;
 
-        const completedCount = AppState.activities.filter(a => a.status === 'Concluída' && a.completedAt && a.completedAt.split('T')[0] === dayStr).length;
+        const completedCount = AppState.activities.filter(a => a.status === 'Concluída' && a.completedAt && toLocalDateString(a.completedAt) === dayStr).length;
 
         const cell = document.createElement('div');
         let borderClass = 'border-slate-100 hover:border-brand-300';
@@ -2298,7 +2379,7 @@
             </div>
           </div>
           <div class="text-[10px] text-slate-500 line-clamp-2 mt-1 leading-tight">
-            ${notePreview}
+            ${esc(notePreview)}
           </div>
         `;
 
@@ -2357,12 +2438,12 @@
       previewContainer.innerHTML = `
         ${note.summary ? `
           <div class="p-2.5 rounded bg-brand-50/50 border border-brand-100 text-xs text-brand-900 font-medium">
-            ${note.summary}
+            ${esc(note.summary)}
           </div>
         ` : ''}
 
         <div class="text-xs text-slate-700 whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed border border-slate-100 p-2.5 rounded-lg bg-slate-50">
-          ${note.freeText || 'Sem anotação de texto livre.'}
+          ${esc(note.freeText || 'Sem anotação de texto livre.')}
         </div>
 
         <div class="pt-2 flex items-center justify-between border-t border-slate-100">
@@ -2392,7 +2473,7 @@
               <span>${formatDateBR(d)}</span>
               <span class="text-[10px] text-brand-600 font-normal">Ver</span>
             </div>
-            <p class="text-[11px] text-slate-500 truncate mt-0.5">${preview}</p>
+            <p class="text-[11px] text-slate-500 truncate mt-0.5">${esc(preview)}</p>
           </div>
         `;
       }).join('');
@@ -2403,18 +2484,13 @@
       if (!activity) return;
 
       AppState.currentDetailActivityId = id;
+      syncActivityStatus(activity);
       const overdue = isOverdue(activity);
-
-      document.getElementById('detail-code-badge').textContent = activity.id;
-      const statusBadge = document.getElementById('detail-status-badge');
-      statusBadge.textContent = activity.status;
-      if (activity.status === 'Concluída') {
-        statusBadge.className = 'text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200';
-      } else if (activity.status === 'Em andamento') {
-        statusBadge.className = 'text-xs px-2 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-800 border border-blue-200';
-      } else {
-        statusBadge.className = 'text-xs px-2 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800 border border-amber-200';
-      }
+      document.getElementById('detail-code-badge').textContent = 'Nº ' + formatActivityNumber(activity);
+      document.getElementById('detail-status-holder').innerHTML =
+        (activity.statusManual === true && activity.status !== 'Concluída'
+          ? '<span title="Status definido manualmente" class="text-slate-400 mr-1 inline-flex align-middle"><i data-lucide="pin" class="w-3.5 h-3.5"></i></span>' : '') +
+        buildStatusSelectHTML(activity, 'changeCurrentDetailStatus(this.value)', 'text-xs px-2.5 py-1');
 
       document.getElementById('detail-title').textContent = activity.title;
       const catBadge = document.getElementById('detail-category-badge');
@@ -2435,7 +2511,6 @@
       document.getElementById('detail-due-date').textContent = activity.dueDate ? formatDateBR(activity.dueDate) : 'Não informado';
       document.getElementById('detail-real-start').textContent = formatDateTimeBR(activity.realStartAt);
       document.getElementById('detail-real-end').textContent = formatDateTimeBR(activity.completedAt);
-      document.getElementById('detail-observations').textContent = activity.observations || 'Nenhuma observação interna adicional.';
 
       const noteOriginBox = document.getElementById('detail-note-origin-box');
       if (activity.originNoteDate) {
@@ -2456,7 +2531,7 @@
         historyContainer.innerHTML = activity.history.map(h => `
           <div class="relative pb-2">
             <span class="text-[10px] font-mono text-slate-400 block">${formatDateTimeBR(h.timestamp)}</span>
-            <span class="text-xs text-slate-700">${h.action}</span>
+            <span class="text-xs text-slate-700">${esc(h.action)}</span>
           </div>
         `).join('');
       } else {
@@ -2467,13 +2542,13 @@
       renderDetailFooterActions(activity);
 
       const panel = document.getElementById('details-panel');
-      panel.classList.remove('translate-x-full');
+      panel.classList.remove('hidden');
       if (window.lucide) lucide.createIcons();
     }
 
     function closeDetailsPanel() {
       const panel = document.getElementById('details-panel');
-      panel.classList.add('translate-x-full');
+      panel.classList.add('hidden');
       AppState.currentDetailActivityId = null;
     }
 
@@ -2511,7 +2586,7 @@
         <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 hover:bg-slate-100/60 transition group">
           <label class="flex items-center gap-2.5 cursor-pointer flex-1 min-w-0">
             <input type="checkbox" onchange="toggleSubtask('${activity.id}', '${s.id}')" ${s.status === 'done' ? 'checked' : ''} class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
-            <span class="text-xs ${s.status === 'done' ? 'line-through text-slate-400' : 'text-slate-800'} truncate">${s.title}</span>
+            <span class="text-xs ${s.status === 'done' ? 'line-through text-slate-400' : 'text-slate-800'} truncate">${esc(s.title)}</span>
           </label>
           <div class="flex items-center gap-2 opacity-80 group-hover:opacity-100">
             ${s.dueDate ? `<span class="text-[10px] text-slate-400">${formatDateBR(s.dueDate)}</span>` : ''}
@@ -2580,7 +2655,7 @@
 
       activity.history.push({
         timestamp: new Date().toISOString(),
-        action: `Subtarefa "${sub.title}" marcada como ${sub.status === 'done' ? 'Concluída' : 'Pendente'}`
+        action: `Subtarefa "${esc(sub.title)}" marcada como ${sub.status === 'done' ? 'Concluída' : 'Pendente'}`
       });
 
       saveActivityCloud(activity);
@@ -2613,7 +2688,7 @@
 
     function renderDetailFooterActions(activity) {
       const container = document.getElementById('detail-quick-actions');
-      if (activity.status === 'Pendente') {
+      if (activity.status === 'Pendente' || activity.status === 'Atrasada') {
         container.innerHTML = `
           <button onclick="startActivity('${activity.id}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-sm flex items-center justify-center gap-1.5">
             <i data-lucide="play" class="w-4 h-4"></i> Iniciar Atividade
@@ -2641,10 +2716,47 @@
       if (window.lucide) lucide.createIcons();
     }
 
+    function changeActivityStatus(id, value) {
+      const act = AppState.activities.find(a => a.id === id);
+      if (!act) return;
+      const now = new Date().toISOString();
+
+      if (value === 'auto') {
+        act.statusManual = false;
+        act.completedAt = null;
+        act.status = 'Pendente';
+        syncActivityStatus(act);
+        act.history.push({ timestamp: now, action: `Status voltou ao modo automático pela data (${act.status})` });
+      } else {
+        act.statusManual = true;
+        act.status = value;
+        if (value === 'Concluída') {
+          act.completedAt = act.completedAt || now;
+          if (!act.realStartAt) act.realStartAt = act.completedAt;
+        } else {
+          act.completedAt = null;
+          if (value === 'Em andamento' && !act.realStartAt) act.realStartAt = now;
+        }
+        act.history.push({ timestamp: now, action: `Status alterado manualmente para ${value}` });
+      }
+
+      saveActivityCloud(act).then(ok => {
+        if (!ok) showToast(`ERRO ao salvar na nuvem (${lastCloudError})`);
+      });
+      refreshAppViews();
+      if (AppState.currentDetailActivityId === id) openActivityDetails(id);
+      showToast(`Status: ${act.status}`);
+    }
+
+    function changeCurrentDetailStatus(value) {
+      if (AppState.currentDetailActivityId) changeActivityStatus(AppState.currentDetailActivityId, value);
+    }
+
     function startActivity(id) {
       const act = AppState.activities.find(a => a.id === id);
       if (!act) return;
       act.status = 'Em andamento';
+      act.statusManual = true;
       if (!act.realStartAt) act.realStartAt = new Date().toISOString();
       act.history.push({
         timestamp: new Date().toISOString(),
@@ -2660,6 +2772,7 @@
       const act = AppState.activities.find(a => a.id === id);
       if (!act) return;
       act.status = 'Pendente';
+      act.statusManual = true;
       act.history.push({
         timestamp: new Date().toISOString(),
         action: 'Atividade pausada (retornou a Pendente)'
@@ -2694,10 +2807,12 @@
       if (!act) return;
 
       act.status = 'Pendente';
+      act.statusManual = false;
+      syncActivityStatus(act);
       act.completedAt = null;
       act.history.push({
         timestamp: new Date().toISOString(),
-        action: 'Atividade reaberta pelo usuário'
+        action: `Atividade reaberta pelo usuário (${act.status})`
       });
 
       saveActivityCloud(act);
@@ -2710,23 +2825,26 @@
       const act = AppState.activities.find(a => a.id === id);
       if (!act) return;
 
-      const newId = 'ATIV-' + (Math.floor(1000 + Math.random() * 9000));
+      const newId = 'ATIV-' + Date.now().toString(36);
       const cloned = {
         ...JSON.parse(JSON.stringify(act)),
         id: newId,
-        title: `${act.title} (Cópia)`,
+        number: getNextActivityNumber(),
+        statusManual: false,
+        title: `${esc(act.title)} (Cópia)`,
         status: 'Pendente',
         createdAt: new Date().toISOString(),
         realStartAt: null,
         completedAt: null,
         archived: false,
-        history: [{ timestamp: new Date().toISOString(), action: `Duplicada a partir de ${act.id}` }]
+        history: [{ timestamp: new Date().toISOString(), action: `Duplicada a partir da atividade nº ${formatActivityNumber(act)}` }]
       };
+      syncActivityStatus(cloned);
 
       AppState.activities.unshift(cloned);
       saveActivityCloud(cloned);
       refreshAppViews();
-      showToast(`Atividade duplicada: ${newId}`);
+      showToast(`Atividade duplicada: nº ${formatActivityNumber(cloned)}`);
     }
 
     function archiveCurrentDetailActivity() {
@@ -2769,7 +2887,7 @@
       const titleModal = document.getElementById('modal-activity-title');
 
       if (activityToEdit) {
-        titleModal.textContent = `Editar Atividade - ${activityToEdit.id}`;
+        titleModal.textContent = `Editar Atividade - Nº ${formatActivityNumber(activityToEdit)}`;
         document.getElementById('form-activity-id').value = activityToEdit.id;
         document.getElementById('form-title').value = activityToEdit.title;
         const catSelect = document.getElementById('form-category');
@@ -2784,7 +2902,6 @@
         document.getElementById('form-start-date').value = activityToEdit.startDate || '';
         document.getElementById('form-due-date').value = activityToEdit.dueDate || '';
         document.getElementById('form-description').value = activityToEdit.description || '';
-        document.getElementById('form-observations').value = activityToEdit.observations || '';
         document.getElementById('form-tags').value = (activityToEdit.tags || []).join(', ');
         document.getElementById('form-activity-origin-note-date').value = activityToEdit.originNoteDate || '';
       } else {
@@ -2813,7 +2930,6 @@
       const startDate = document.getElementById('form-start-date').value || null;
       const dueDate = document.getElementById('form-due-date').value || null;
       const description = document.getElementById('form-description').value.trim();
-      const observations = document.getElementById('form-observations').value.trim();
       const tagsRaw = document.getElementById('form-tags').value;
       const originNoteDate = document.getElementById('form-activity-origin-note-date').value || null;
 
@@ -2831,8 +2947,8 @@
           act.startDate = startDate;
           act.dueDate = dueDate;
           act.description = description;
-          act.observations = observations;
           act.tags = tags;
+          syncActivityStatus(act);
           act.history.push({
             timestamp: new Date().toISOString(),
             action: 'Atividade editada via formulário'
@@ -2841,9 +2957,12 @@
           okMessage = 'Atividade atualizada e salva na nuvem!';
         }
       } else {
-        const newId = 'ATIV-' + (Math.floor(1000 + Math.random() * 9000));
+        const newId = 'ATIV-' + Date.now().toString(36);
+        const newNumber = getNextActivityNumber();
         const newActivity = {
           id: newId,
+          number: newNumber,
+          statusManual: false,
           title,
           category,
           priority,
@@ -2854,18 +2973,18 @@
           realStartAt: null,
           completedAt: null,
           description,
-          observations,
           tags,
           subtasks: [],
           archived: false,
           originNoteDate,
           history: [
-            { timestamp: new Date().toISOString(), action: 'Atividade cadastrada como Pendente' }
+            { timestamp: new Date().toISOString(), action: 'Atividade cadastrada' }
           ]
         };
+        syncActivityStatus(newActivity);
         AppState.activities.unshift(newActivity);
         savePromise = saveActivityCloud(newActivity);
-        okMessage = `Atividade cadastrada: ${newId}`;
+        okMessage = `Atividade nº ${String(newNumber).padStart(2, '0')} cadastrada!`;
       }
 
       closeActivityModal();
@@ -3019,8 +3138,8 @@
       container.innerHTML = linked.map(a => `
         <div class="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100 text-xs">
           <div class="flex items-center gap-2">
-            <span class="font-mono text-[10px] text-slate-500 font-bold">${a.id}</span>
-            <span class="font-medium text-slate-800">${a.title}</span>
+            <span class="font-mono text-[10px] text-slate-500 font-bold">Nº ${formatActivityNumber(a)}</span>
+            <span class="font-medium text-slate-800">${esc(a.title)}</span>
           </div>
           <span class="text-[10px] px-2 py-0.5 rounded-full ${a.status === 'Concluída' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'} font-semibold">
             ${a.status}
@@ -3043,15 +3162,16 @@
         selectedText = lines.length > 0 ? lines[0] : 'Nova atividade originada da anotação';
       }
 
+      const noteDate = activeEditingNoteDate; // guardar antes de fechar (closeNoteModal zera a variável)
       closeNoteModal();
 
       openActivityModal();
       document.getElementById('form-title').value = selectedText;
-      document.getElementById('form-description').value = `Origem no diário do dia ${formatDateBR(activeEditingNoteDate)}:\n"${selectedText}"`;
-      document.getElementById('form-activity-origin-note-date').value = activeEditingNoteDate;
+      document.getElementById('form-description').value = `Origem no diário do dia ${formatDateBR(noteDate)}:\n"${selectedText}"`;
+      document.getElementById('form-activity-origin-note-date').value = noteDate;
       document.getElementById('form-priority').value = 'Alta';
-      document.getElementById('form-start-date').value = activeEditingNoteDate;
-      document.getElementById('form-due-date').value = activeEditingNoteDate;
+      document.getElementById('form-start-date').value = noteDate;
+      document.getElementById('form-due-date').value = noteDate;
     }
 
     function confirmDeleteCurrentNote() {
@@ -3079,16 +3199,16 @@
       let completedActs = AppState.activities.filter(a => a.status === 'Concluída' && !a.archived);
 
       if (startFilter) {
-        completedActs = completedActs.filter(a => a.completedAt && a.completedAt >= startFilter);
+        completedActs = completedActs.filter(a => a.completedAt && toLocalDateString(a.completedAt) >= startFilter);
       }
       if (endFilter) {
-        completedActs = completedActs.filter(a => a.completedAt && a.completedAt.split('T')[0] <= endFilter);
+        completedActs = completedActs.filter(a => a.completedAt && toLocalDateString(a.completedAt) <= endFilter);
       }
 
       const total = completedActs.length;
       const onTime = completedActs.filter(a => {
         if (!a.dueDate || !a.completedAt) return true;
-        return a.completedAt.split('T')[0] <= a.dueDate;
+        return toLocalDateString(a.completedAt) <= a.dueDate;
       }).length;
       const late = total - onTime;
 
@@ -3103,20 +3223,20 @@
       }
 
       container.innerHTML = completedActs.map(act => {
-        const completedDay = act.completedAt ? act.completedAt.split('T')[0] : null;
+        const completedDay = act.completedAt ? toLocalDateString(act.completedAt) : null;
         const wasLate = act.dueDate && completedDay && completedDay > act.dueDate;
 
         return `
           <div onclick="openActivityDetails('${act.id}')" class="p-3.5 rounded-lg border border-slate-200/80 bg-white hover:border-slate-300 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition">
             <div>
               <div class="flex items-center gap-2 mb-1">
-                <span class="font-mono text-[10px] font-bold text-slate-500">${act.id}</span>
+                <span class="font-mono text-[10px] font-bold text-slate-500">Nº ${formatActivityNumber(act)}</span>
                 <span class="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
-                  ${act.category}
+                  ${esc(act.category)}
                 </span>
                 <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">✓ Finalizada</span>
               </div>
-              <h4 class="text-xs font-bold text-slate-800">${act.title}</h4>
+              <h4 class="text-xs font-bold text-slate-800">${esc(act.title)}</h4>
             </div>
 
             <div class="text-right text-xs">
@@ -3144,10 +3264,10 @@
         <div class="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50/50 text-xs">
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-mono text-[10px] font-bold text-slate-400">${act.id}</span>
-              <span class="font-bold text-slate-700">${act.title}</span>
+              <span class="font-mono text-[10px] font-bold text-slate-400">Nº ${formatActivityNumber(act)}</span>
+              <span class="font-bold text-slate-700">${esc(act.title)}</span>
             </div>
-            <span class="text-[10px] text-slate-400">Categoria: ${act.category} | Prioridade: ${act.priority}</span>
+            <span class="text-[10px] text-slate-400">Categoria: ${esc(act.category)} | Prioridade: ${esc(act.priority)}</span>
           </div>
           <div class="flex items-center gap-2">
             <button onclick="restoreArchived('${act.id}')" class="px-2.5 py-1 text-xs font-medium text-brand-600 hover:bg-brand-50 rounded">Restaurar</button>
@@ -3287,7 +3407,7 @@
       list.innerHTML = AppState.categories.map(c => `
         <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
           <div class="flex items-center gap-2">
-            <span class="font-medium text-slate-800">${c.name}</span>
+            <span class="font-medium text-slate-800">${esc(c.name)}</span>
           </div>
           <button onclick="confirmDeleteCategory('${c.id}')" class="text-slate-400 hover:text-rose-600 p-1">
             <i data-lucide="trash" class="w-3.5 h-3.5"></i>
@@ -3328,13 +3448,13 @@
 
       openConfirmModal(
         'Excluir Categoria',
-        `Deseja remover a categoria "${cat.name}"? As atividades existentes não serão apagadas.`,
+        `Deseja remover a categoria "${esc(cat.name)}"? As atividades existentes não serão apagadas.`,
         () => {
           AppState.categories = AppState.categories.filter(c => c.id !== catId);
           deleteCategoryCloud(catId);
           renderCategoryModalList();
           renderCategories();
-          showToast(`Categoria "${cat.name}" removida.`);
+          showToast(`Categoria "${esc(cat.name)}" removida.`);
         }
       );
     }
@@ -3435,6 +3555,10 @@
       AppState.categoryFilter = 'ALL';
       AppState.priorityFilter = 'ALL';
       AppState.searchQuery = '';
+      AppState.sortBy = 'smart';
+      document.getElementById('filter-select-sort').value = 'smart';
+      document.getElementById('search-clear-btn').classList.add('hidden');
+      document.querySelectorAll('.filter-item').forEach(btn => btn.classList.remove('bg-brand-50', 'text-brand-700', 'font-semibold'));
       document.getElementById('global-search-input').value = '';
       document.getElementById('filter-select-category').value = 'ALL';
       document.getElementById('filter-select-priority').value = 'ALL';
@@ -3555,6 +3679,8 @@
     }
 
     function refreshAppViews() {
+      ensureActivityNumbers();
+      syncAllActivityStatuses();
       updateCountersAndBadges();
       renderCategories();
 
@@ -3603,7 +3729,8 @@
       toggleActivityComplete, reopenActivity, editActivityDirect, duplicateActivity,
       startActivity, pauseActivity, toggleSubtask, deleteSubtask, toggleSubtaskFromWidget,
       restoreArchived, permanentlyDeleteArchived, selectCalendarDay, handleNoteFieldInput,
-      saveNoteImmediately, handleGoogleLogin, handleLogout, openSelectedCalendarDayNote
+      saveNoteImmediately, handleGoogleLogin, handleLogout, openSelectedCalendarDayNote,
+      changeActivityStatus, changeCurrentDetailStatus
     });
 
     window.addEventListener('DOMContentLoaded', () => {

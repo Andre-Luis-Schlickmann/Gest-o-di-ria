@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
+  <!-- Instalar como aplicativo (celular e computador) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Rotina">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Minha Rotina</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -46,12 +54,15 @@
       </button>
     </div>
     <nav class="px-3 space-y-0.5 flex-1">
+      <button data-action="view" data-view="quadro" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
+        <span data-icon="board"></span>Quadro
+      </button>
       <button data-action="view" data-view="hoje" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
         <span class="flex items-center gap-2.5"><span data-icon="sun"></span>Hoje</span>
         <span class="badge-hoje text-xs font-semibold text-slate-400"></span>
       </button>
-      <button data-action="view" data-view="proximos" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
-        <span data-icon="calendar"></span>Próximos dias
+      <button data-action="view" data-view="gantt" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
+        <span data-icon="gantt"></span>Cronograma
       </button>
       <button data-action="view" data-view="notas" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
         <span data-icon="book"></span>Anotações
@@ -75,7 +86,7 @@
   <div class="flex-1 flex flex-col min-w-0">
 
     <!-- Cabeçalho -->
-    <header class="bg-white border-b border-slate-200 flex-shrink-0">
+    <header class="bg-white border-b border-slate-200 flex-shrink-0" style="padding-top: env(safe-area-inset-top)">
       <div class="h-14 md:h-16 px-4 md:px-6 flex items-center justify-between gap-3 max-w-3xl md:max-w-none mx-auto w-full">
         <h1 id="view-title" class="text-lg font-semibold text-slate-900">Hoje</h1>
         <div class="flex items-center gap-2">
@@ -89,7 +100,7 @@
     </header>
 
     <main id="main" class="flex-1 overflow-y-auto pb-28 md:pb-10">
-      <div class="max-w-3xl mx-auto px-4 md:px-6 py-4 md:py-6">
+      <div id="wrap" class="max-w-3xl mx-auto px-4 md:px-6 py-4 md:py-6">
 
         <!-- HOJE -->
         <section id="view-hoje" class="view space-y-4">
@@ -110,10 +121,29 @@
           <div id="hoje-list" class="space-y-5"></div>
         </section>
 
-        <!-- PRÓXIMOS -->
-        <section id="view-proximos" class="view space-y-4 hidden">
-          <div class="cat-chips flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0"></div>
-          <div id="prox-list" class="space-y-5"></div>
+        <!-- QUADRO -->
+        <section id="view-quadro" class="view hidden">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div class="group-toggle flex items-center gap-1 p-1 bg-slate-200/60 rounded-lg"></div>
+            <span class="text-xs text-slate-400 hidden md:inline">Dica: arraste os cards de uma coluna para outra</span>
+          </div>
+          <div id="board" class="flex gap-3 overflow-x-auto snap-x snap-mandatory md:snap-none pb-4 -mx-4 px-4 md:-mx-6 md:px-6 items-start"></div>
+        </section>
+
+        <!-- CRONOGRAMA -->
+        <section id="view-gantt" class="view hidden">
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <div class="group-toggle flex items-center gap-1 p-1 bg-slate-200/60 rounded-lg"></div>
+            <div id="gantt-range" class="flex items-center gap-1 p-1 bg-slate-200/60 rounded-lg"></div>
+            <div class="flex items-center gap-1">
+              <button data-action="gantt-prev" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200/60" aria-label="Voltar"><span data-icon="chevronLeft"></span></button>
+              <button data-action="gantt-today" class="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200/60">Hoje</button>
+              <button data-action="gantt-next" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200/60" aria-label="Avançar"><span data-icon="chevronRight"></span></button>
+            </div>
+            <label class="flex items-center gap-1.5 text-xs text-slate-600 ml-auto cursor-pointer select-none"><input type="checkbox" id="gantt-done" class="rounded"> Mostrar concluídas</label>
+          </div>
+          <div id="gantt" class="bg-white rounded-xl border border-slate-200 overflow-x-auto relative"></div>
+          <p id="gantt-note" class="text-xs text-slate-400 mt-2"></p>
         </section>
 
         <!-- ANOTAÇÕES -->
@@ -212,12 +242,13 @@
 
 <!-- ===== MENU INFERIOR (celular) ===== -->
 <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 safe-bottom">
-  <div class="grid grid-cols-4 h-16">
+  <div class="grid grid-cols-5 h-16">
+    <button data-action="view" data-view="quadro" class="tab-btn flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500"><span data-icon="board" data-cls="w-5 h-5"></span>Quadro</button>
     <button data-action="view" data-view="hoje" class="tab-btn relative flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500">
       <span data-icon="sun" data-cls="w-5 h-5"></span>Hoje
       <span class="badge-hoje-m absolute top-1.5 left-1/2 ml-2 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-semibold flex items-center justify-center hidden"></span>
     </button>
-    <button data-action="view" data-view="proximos" class="tab-btn flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500"><span data-icon="calendar" data-cls="w-5 h-5"></span>Próximos</button>
+    <button data-action="view" data-view="gantt" class="tab-btn flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500"><span data-icon="gantt" data-cls="w-5 h-5"></span>Cronograma</button>
     <button data-action="view" data-view="notas" class="tab-btn flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500"><span data-icon="book" data-cls="w-5 h-5"></span>Anotações</button>
     <button data-action="view" data-view="config" class="tab-btn flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500"><span data-icon="more" data-cls="w-5 h-5"></span>Mais</button>
   </div>
@@ -281,7 +312,12 @@
   let unsubs = [];
 
   const S = {
-    view: 'hoje',
+    view: 'quadro',
+    groupBy: 'category',
+    ganttRange: 'month',
+    ganttOffset: 0,
+    ganttShowDone: false,
+    colDoneOpen: {},
     catFilter: 'ALL',
     search: '',
     categories: [],
@@ -315,7 +351,10 @@
     more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
     download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
     upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/>',
-    arrowRight: '<path d="M5 12h14M12 5l7 7-7 7"/>'
+    arrowRight: '<path d="M5 12h14M12 5l7 7-7 7"/>',
+    board: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7v7M12 7v4M16 7v9"/>',
+    gantt: '<path d="M3 3v18h18"/><path d="M7 7h6M10 12h8M7 17h5"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
   };
   function icon(name, cls = 'w-4 h-4', filled = false) {
     return `<svg class="${cls} flex-shrink-0" viewBox="0 0 24 24" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
@@ -340,6 +379,31 @@
   const newId = () => 'ATIV-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   const clean = obj => JSON.parse(JSON.stringify(obj));
   const WEEK_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+  // ----- Cores das categorias e das pessoas -----
+  const PALETTE = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#f43f5e', '#06b6d4', '#f97316', '#14b8a6', '#ec4899', '#6366f1', '#84cc16', '#64748b'];
+  const hashStr = str => { let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); };
+  function catColor(name) {
+    if (!name) return '#94a3b8';
+    const c = S.categories.find(x => x.name === name);
+    if (c && c.color) return c.color;
+    return PALETTE[hashStr(name) % PALETTE.length];
+  }
+  const personColor = n => PALETTE[(hashStr(n.trim().toLowerCase()) + 5) % PALETTE.length];
+  function initials(n) {
+    const parts = String(n).trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+  }
+  function avatar(n, size = 'w-6 h-6 text-[10px]') {
+    return `<span title="${esc(n)}" class="${size} rounded-full inline-flex items-center justify-center font-semibold text-white flex-shrink-0" style="background:${personColor(n)}">${esc(initials(n))}</span>`;
+  }
+  const meAvatar = (size = 'w-6 h-6') => `<span title="Eu" class="${size} rounded-full inline-flex items-center justify-center bg-brand-600 text-white flex-shrink-0">${icon('user', 'w-3 h-3')}</span>`;
+  function people() {
+    const count = {};
+    S.activities.forEach(a => { const r = (a.responsible || '').trim(); if (r) count[r] = (count[r] || 0) + 1; });
+    return Object.keys(count).sort((a, b) => count[b] - count[a] || a.localeCompare(b, 'pt-BR'));
+  }
 
   function dateLabel(s) {
     if (!s) return 'Sem data';
@@ -467,7 +531,7 @@
       status: 'Pendente',
       statusManual: false,
       dueDate: next,
-      startDate: null,
+      startDate: (a.startDate && a.dueDate) ? addDays(next, -Math.round((parseYmd(a.dueDate) - parseYmd(a.startDate)) / 86400000)) : null,
       createdAt: now,
       realStartAt: null,
       completedAt: null,
@@ -519,6 +583,13 @@
     unsubs.push(onSnapshot(colRef('categories'), async snap => {
       if (snap.empty) { for (const c of INITIAL_CATEGORIES) await saveCat(c); return; }
       S.categories = snap.docs.map(d => d.data()).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+      // Dá uma cor própria (e salva) para categorias que ainda não têm
+      const used = new Set(S.categories.map(c => c.color).filter(Boolean));
+      S.categories.filter(c => !c.color).forEach(c => {
+        c.color = PALETTE.find(col => !used.has(col)) || PALETTE[hashStr(c.name) % PALETTE.length];
+        used.add(c.color);
+        saveCat(c);
+      });
       render();
     }, e => { console.error(e); setCloudStatus(false, 'Erro: ' + (e.code || '')); }));
     unsubs.push(onSnapshot(colRef('activities'), snap => {
@@ -573,7 +644,8 @@
     const subsDone = subs.filter(s => s.status === 'done').length;
     const meta = [];
     if (showDate && a.dueDate) meta.push(`<span class="${late ? 'text-rose-600 font-medium' : ''}">${dateLabel(a.dueDate)}</span>`);
-    if (a.category) meta.push(`<span>${esc(a.category)}</span>`);
+    if (a.category) meta.push(`<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:${catColor(a.category)}"></span>${esc(a.category)}</span>`);
+    if (a.responsible) meta.push(`<span class="inline-flex items-center gap-1 text-slate-500">${icon('user', 'w-3 h-3')}${esc(a.responsible)}</span>`);
     if (a.recurrence && a.recurrence.type && a.recurrence.type !== 'none') meta.push(`<span class="inline-flex items-center gap-1">${icon('repeat', 'w-3 h-3')}${esc(recLabel(a.recurrence))}</span>`);
     if (subs.length) meta.push(`<span class="inline-flex items-center gap-1">${icon('list', 'w-3 h-3')}${subsDone}/${subs.length}</span>`);
 
@@ -582,7 +654,7 @@
     else if (!done && a.status === 'Atrasada') pill = '<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap">Atrasada</span>';
 
     return `
-      <div data-action="open" data-id="${esc(a.id)}" class="flex items-center gap-3 px-3 py-3 bg-white hover:bg-slate-50 cursor-pointer transition">
+      <div data-action="open" data-id="${esc(a.id)}" class="flex items-center gap-3 px-3 py-3 bg-white hover:bg-slate-50 cursor-pointer transition" style="box-shadow: inset 3px 0 0 ${catColor(a.category)}">
         <button data-action="toggle" data-id="${esc(a.id)}" aria-label="${done ? 'Reabrir' : 'Concluir'}"
           class="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition ${done ? 'bg-emerald-500 border-emerald-500 text-white' : late ? 'border-rose-400 hover:bg-rose-50' : 'border-slate-300 hover:border-brand-500 hover:bg-brand-50'}">
           ${done ? icon('check', 'w-3.5 h-3.5') : ''}
@@ -663,27 +735,6 @@
     document.getElementById('hoje-list').innerHTML = html;
   }
 
-  function renderProximos() {
-    const t = today();
-    const open = activeActs().filter(a => !isDone(a) && !(a.dueDate && a.dueDate <= t) && a.status !== 'Em andamento');
-    const groups = new Map();
-    const order = [];
-    const put = (key, title, a) => { if (!groups.has(key)) { groups.set(key, { title, list: [] }); order.push(key); } groups.get(key).list.push(a); };
-    const limit = addDays(t, 7);
-    sortActs(open.filter(a => a.dueDate)).forEach(a => {
-      if (a.dueDate <= limit) put(a.dueDate, a.dueDate === addDays(t, 1) ? 'Amanhã' : longDate(a.dueDate), a);
-    });
-    const later = sortActs(open.filter(a => a.dueDate && a.dueDate > limit));
-    const noDate = sortActs(open.filter(a => !a.dueDate));
-
-    let html = order.map(k => groupHTML(esc(groups.get(k).title), groups.get(k).list, { showDate: false })).join('')
-      + groupHTML('Mais adiante', later)
-      + groupHTML('Sem data', noDate, { showDate: false });
-
-    if (!html) html = '<div class="text-center py-12 text-sm text-slate-400">Nada agendado para os próximos dias.</div>';
-    document.getElementById('prox-list').innerHTML = html;
-  }
-
   function renderConcluidas() {
     const done = S.activities.filter(a => !a.archived && isDone(a))
       .sort((a, b) => (b.completedAt || '').localeCompare(a.completedAt || ''));
@@ -707,6 +758,7 @@
       (a.title || '').toLowerCase().includes(q) ||
       (a.description || '').toLowerCase().includes(q) ||
       (a.category || '').toLowerCase().includes(q) ||
+      (a.responsible || '').toLowerCase().includes(q) ||
       (a.subtasks || []).some(s => (s.title || '').toLowerCase().includes(q))));
     const open = sortActs(res.filter(a => !isDone(a)));
     const done = res.filter(isDone).sort((a, b) => (b.completedAt || '').localeCompare(a.completedAt || ''));
@@ -722,6 +774,210 @@
     }
     if (!html) html = `<div class="text-center py-12 text-sm text-slate-400">Nada encontrado para "${esc(S.search)}".</div>`;
     document.getElementById('search-list').innerHTML = `<div class="space-y-5">${html}</div>`;
+  }
+
+  // ----- Agrupamento (Quadro e Cronograma) -----
+  const groupKeyOf = a => S.groupBy === 'person' ? (a.responsible || '').trim() : (a.category || '');
+  function groupMeta(key) {
+    if (S.groupBy === 'person') return { name: key || 'Eu', color: key ? personColor(key) : '#1d4ed8', person: true };
+    return { name: key || 'Sem categoria', color: catColor(key), person: false };
+  }
+  function orderKeys(keys) {
+    const list = [...new Set(keys)];
+    if (S.groupBy === 'person') return list.sort((a, b) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b, 'pt-BR')));
+    const order = S.categories.map(c => c.name);
+    return list.sort((a, b) => {
+      if (a === '') return 1; if (b === '') return -1;
+      const ia = order.indexOf(a), ib = order.indexOf(b);
+      return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib) || a.localeCompare(b, 'pt-BR');
+    });
+  }
+  function renderGroupToggle() {
+    const b = (v, l, ic) => `<button data-action="group" data-val="${v}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${S.groupBy === v ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}">${icon(ic, 'w-3.5 h-3.5')}${l}</button>`;
+    document.querySelectorAll('.group-toggle').forEach(e => e.innerHTML = b('category', 'Por categoria', 'board') + b('person', 'Por responsável', 'user'));
+  }
+
+  function cardHTML(a) {
+    const t = today();
+    const done = isDone(a);
+    const late = !done && a.dueDate && a.dueDate < t;
+    const subs = a.subtasks || [];
+    const subsDone = subs.filter(x => x.status === 'done').length;
+    const bits = [];
+    if (!done && a.status === 'Em andamento') bits.push('<span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">Em andamento</span>');
+    if (a.dueDate) bits.push(`<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded ${done ? 'text-slate-400' : late ? 'bg-rose-50 text-rose-700 font-medium' : a.dueDate === t ? 'bg-amber-50 text-amber-700 font-medium' : 'text-slate-500'}">${icon('calendar', 'w-3 h-3')}${dateLabel(a.dueDate)}</span>`);
+    if (a.recurrence && a.recurrence.type && a.recurrence.type !== 'none') bits.push(`<span class="text-slate-400" title="${esc(recLabel(a.recurrence))}">${icon('repeat', 'w-3.5 h-3.5')}</span>`);
+    if (subs.length) bits.push(`<span class="inline-flex items-center gap-1 text-slate-500">${icon('list', 'w-3 h-3')}${subsDone}/${subs.length}</span>`);
+    if (S.groupBy === 'person' && a.category) bits.push(`<span class="px-1.5 py-0.5 rounded font-medium" style="background:${catColor(a.category)}22;color:${catColor(a.category)}">${esc(a.category)}</span>`);
+    const who = S.groupBy === 'category' && a.responsible ? avatar(a.responsible, 'w-6 h-6 text-[10px] ml-auto') : '';
+    return `
+      <div data-action="open" data-id="${esc(a.id)}" data-drag="${esc(a.id)}" draggable="true"
+        class="bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md hover:border-slate-300 cursor-pointer transition ${done ? 'opacity-70' : ''}">
+        <div class="flex items-start gap-2.5">
+          <button data-action="toggle" data-id="${esc(a.id)}" aria-label="${done ? 'Reabrir' : 'Concluir'}"
+            class="mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition ${done ? 'bg-emerald-500 border-emerald-500 text-white' : late ? 'border-rose-400 hover:bg-rose-50' : 'border-slate-300 hover:border-brand-500 hover:bg-brand-50'}">
+            ${done ? icon('check', 'w-3 h-3') : ''}
+          </button>
+          <div class="flex-1 min-w-0 text-sm leading-snug ${done ? 'line-through text-slate-400' : 'text-slate-900 font-medium'}">${esc(a.title)}</div>
+          ${isImportant(a) ? `<span class="text-amber-400 flex-shrink-0">${icon('star', 'w-4 h-4', true)}</span>` : ''}
+        </div>
+        ${bits.length || who ? `<div class="flex flex-wrap items-center gap-1.5 mt-2.5 text-[11px] pl-7">${bits.join('')}${who}</div>` : ''}
+      </div>`;
+  }
+
+  function renderQuadro() {
+    renderGroupToggle();
+    const t = today();
+    const acts = S.activities.filter(a => !a.archived);
+    const open = acts.filter(a => !isDone(a));
+    const recentDone = acts.filter(a => isDone(a) && (localDate(a.completedAt) || '') >= addDays(t, -14));
+    let keys = open.map(groupKeyOf).concat(recentDone.map(groupKeyOf));
+    if (S.groupBy === 'person') keys.push('');
+    keys = orderKeys(keys);
+    const board = document.getElementById('board');
+    if (!keys.length) {
+      board.innerHTML = '<div class="w-full text-center py-12 text-sm text-slate-400">Nenhuma atividade ainda. Use o botão "Nova atividade".</div>';
+      return;
+    }
+    board.innerHTML = keys.map(k => {
+      const m = groupMeta(k);
+      const list = sortActs(open.filter(a => groupKeyOf(a) === k));
+      const done = recentDone.filter(a => groupKeyOf(a) === k).sort((a, b) => (b.completedAt || '').localeCompare(a.completedAt || ''));
+      const openKey = S.groupBy + '|' + k;
+      const lateN = list.filter(a => a.dueDate && a.dueDate < t).length;
+      return `
+        <div data-drop="${esc(k)}" class="board-col snap-start flex-shrink-0 w-[82vw] sm:w-72 rounded-xl flex flex-col transition" style="background:${m.color}14">
+          <div class="px-3 pt-2.5 pb-2 rounded-t-xl" style="border-top:4px solid ${m.color}">
+            <div class="flex items-center justify-between gap-2">
+              <span class="flex items-center gap-2 min-w-0 font-semibold text-sm text-slate-800">
+                ${m.person ? (k ? avatar(k) : meAvatar()) : `<span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${m.color}"></span>`}
+                <span class="truncate">${esc(m.name)}</span>
+              </span>
+              <span class="flex items-center gap-1.5 text-xs text-slate-500">${lateN ? `<span class="px-1.5 rounded-full bg-rose-100 text-rose-700 font-semibold" title="Atrasadas">${lateN}</span>` : ''}${list.length}</span>
+            </div>
+            <button data-action="col-add" data-key="${esc(k)}" class="mt-2 w-full flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white/70 hover:bg-white rounded-lg px-2.5 py-2 border border-dashed border-slate-300 transition">
+              ${icon('plus', 'w-3.5 h-3.5')} Adicionar tarefa
+            </button>
+          </div>
+          <div class="px-2 pb-2 space-y-2 min-h-[40px]">
+            ${list.length ? list.map(cardHTML).join('') : '<p class="text-xs text-slate-400 text-center py-3">Nada aberto aqui</p>'}
+          </div>
+          ${done.length ? `
+            <div class="px-2 pb-2">
+              <button data-action="col-done" data-key="${esc(openKey)}" class="flex items-center gap-1.5 px-1.5 py-1 text-xs font-medium text-slate-500 hover:text-slate-700">
+                <span class="transition ${S.colDoneOpen[openKey] ? '' : '-rotate-90'}">${icon('chevronDown', 'w-3.5 h-3.5')}</span>Concluídas (${done.length})
+              </button>
+              ${S.colDoneOpen[openKey] ? `<div class="space-y-2 mt-1">${done.map(cardHTML).join('')}</div>` : ''}
+            </div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  function renderGantt() {
+    renderGroupToggle();
+    const t = today();
+    const mobile = window.innerWidth < 768;
+    const RANGES = {
+      '2w': { label: '2 semanas', days: 14, w: mobile ? 34 : 52, back: 3, step: 7 },
+      month: { label: 'Mês', days: 31, w: mobile ? 24 : 32, back: 7, step: 14 },
+      '3m': { label: '3 meses', days: 91, w: mobile ? 9 : 13, back: 14, step: 30 }
+    };
+    const R = RANGES[S.ganttRange];
+    document.getElementById('gantt-range').innerHTML = Object.entries(RANGES).map(([k, v]) =>
+      `<button data-action="gantt-range" data-val="${k}" class="px-2.5 py-1.5 rounded-md text-xs font-medium transition ${S.ganttRange === k ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}">${v.label}</button>`).join('');
+    document.getElementById('gantt-done').checked = S.ganttShowDone;
+
+    const start = addDays(t, -R.back + S.ganttOffset * R.step);
+    const end = addDays(start, R.days - 1);
+    const idx = s => Math.round((parseYmd(s) - parseYmd(start)) / 86400000);
+    const labelW = mobile ? 130 : 240;
+    const trackW = R.days * R.w;
+    const width = labelW + trackW;
+
+    const rows = S.activities.filter(a => !a.archived && a.dueDate && (S.ganttShowDone || !isDone(a))).map(a => {
+      let s0 = a.startDate || a.dueDate; // sem início: aparece só no dia do término
+      if (s0 > a.dueDate) s0 = a.dueDate;
+      const done = isDone(a);
+      const late = !done && a.dueDate < t;
+      const e0 = late ? t : a.dueDate;
+      return { a, s0, due: a.dueDate, e0, late, done };
+    }).filter(r => r.e0 >= start && r.s0 <= end);
+    const noDate = S.activities.filter(a => !a.archived && !a.dueDate && !isDone(a)).length;
+    document.getElementById('gantt-note').textContent =
+      'A barra vai da data de início até a data de término. Sem data de início, aparece só no dia do término. A parte listrada em vermelho é o atraso.' +
+      (noDate ? ` ${noDate} atividade(s) sem prazo não aparecem aqui.` : '');
+
+    // Cabeçalho: meses e dias
+    let months = '', daysRow = '', overlay = '';
+    let cur = null, span = 0;
+    const flush = () => { if (cur) months += `<div class="text-[11px] font-semibold text-slate-600 border-l border-slate-200 whitespace-nowrap" style="width:${span * R.w}px"><span class="sticky inline-block px-1.5" style="left:${labelW}px">${cur}</span></div>`; };
+    for (let i = 0; i < R.days; i++) {
+      const ds = addDays(start, i), d = parseYmd(ds);
+      const mName = d.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }).replace('.', '').replace(' de ', ' ');
+      if (mName !== cur) { flush(); cur = mName; span = 0; }
+      span++;
+      const wknd = d.getDay() === 0 || d.getDay() === 6;
+      const isT = ds === t;
+      const showNum = R.w >= 20 || d.getDay() === 1;
+      daysRow += `<div class="text-center text-[10px] leading-4 ${isT ? 'text-white' : wknd ? 'text-slate-300' : 'text-slate-500'}" style="width:${R.w}px">
+        ${showNum ? `<span class="${isT ? 'bg-rose-500 rounded px-1 font-semibold' : ''}">${d.getDate()}</span>` : ''}</div>`;
+      if (wknd) overlay += `<div class="absolute top-0 bottom-0 bg-slate-100/70" style="left:${i * R.w}px;width:${R.w}px"></div>`;
+    }
+    flush();
+    const ti = idx(t);
+    if (ti >= 0 && ti < R.days) overlay += `<div class="absolute top-0 bottom-0 w-0.5 bg-rose-500/70" style="left:${ti * R.w + R.w / 2 - 1}px"></div>`;
+
+    let body = '';
+    const keys = orderKeys(rows.map(r => groupKeyOf(r.a)));
+    keys.forEach(k => {
+      const m = groupMeta(k);
+      const grp = rows.filter(r => groupKeyOf(r.a) === k).sort((x, y) => x.due.localeCompare(y.due) || x.s0.localeCompare(y.s0));
+      body += `<div class="flex border-t border-slate-200" style="width:${width}px">
+        <div class="sticky left-0 z-10 flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-700 border-r border-slate-200" style="width:${labelW}px;min-width:${labelW}px;background:linear-gradient(${m.color}1a,${m.color}1a),#fff">
+          ${m.person ? (k ? avatar(k, 'w-5 h-5 text-[9px]') : meAvatar('w-5 h-5')) : `<span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${m.color}"></span>`}
+          <span class="truncate">${esc(m.name)}</span><span class="text-slate-400 font-normal">${grp.length}</span>
+        </div>
+        <div style="width:${trackW}px;background:${m.color}0d"></div>
+      </div>`;
+      grp.forEach(r => {
+        const a = r.a;
+        const color = S.groupBy === 'person' ? catColor(a.category) : m.color;
+        const sI = Math.max(0, idx(r.s0)), dI = Math.min(R.days - 1, idx(r.due));
+        let bars = '';
+        if (idx(r.due) >= 0 && idx(r.s0) < R.days) {
+          bars += `<div data-action="open" data-id="${esc(a.id)}" title="${esc(a.title)} · início ${a.startDate ? a.startDate.split('-').reverse().join('/') : '—'} · término ${r.due.split('-').reverse().join('/')}"
+            class="absolute top-2 h-5 cursor-pointer hover:brightness-110 ${idx(r.s0) >= 0 ? 'rounded-l-md' : ''} ${r.late ? '' : 'rounded-r-md'}"
+            style="left:${sI * R.w + 2}px;width:${Math.max(R.w - 4, (dI - sI + 1) * R.w - 4)}px;background:${color};opacity:${r.done ? 0.35 : 1}"></div>`;
+        }
+        if (r.late) {
+          const lS = Math.max(0, idx(r.due) + 1), lE = Math.min(R.days - 1, idx(t));
+          if (lE >= lS) bars += `<div data-action="open" data-id="${esc(a.id)}" title="Atrasada desde ${r.due.split('-').reverse().join('/')}" class="absolute top-2 h-5 rounded-r-md cursor-pointer"
+            style="left:${lS * R.w}px;width:${(lE - lS + 1) * R.w - 2}px;background:repeating-linear-gradient(45deg,#fda4af 0 4px,#ffe4e6 4px 8px)"></div>`;
+        }
+        body += `<div class="flex border-t border-slate-100 hover:bg-slate-50/60" style="width:${width}px;height:36px">
+          <div data-action="open" data-id="${esc(a.id)}" class="sticky left-0 z-10 bg-white flex items-center gap-2 px-3 border-r border-slate-200 cursor-pointer hover:text-brand-600" style="width:${labelW}px;min-width:${labelW}px">
+            <span class="flex-1 truncate text-xs ${r.done ? 'line-through text-slate-400' : r.late ? 'text-rose-700 font-medium' : 'text-slate-700'}">${esc(a.title)}</span>
+            ${S.groupBy === 'category' && a.responsible ? avatar(a.responsible, 'w-5 h-5 text-[9px]') : ''}
+          </div>
+          <div class="relative" style="width:${trackW}px">${bars}</div>
+        </div>`;
+      });
+    });
+    if (!rows.length) body = `<div class="sticky left-0 py-12 text-center text-sm text-slate-400" style="width:min(100%,${width}px)">Nenhuma atividade com prazo neste período.</div>`;
+
+    document.getElementById('gantt').innerHTML = `
+      <div class="relative" style="width:${width}px">
+        <div class="absolute top-0 bottom-0 pointer-events-none" style="left:${labelW}px;width:${trackW}px">${overlay}</div>
+        <div class="flex relative border-b border-slate-200 bg-white/90" style="width:${width}px">
+          <div class="sticky left-0 z-20 bg-white border-r border-slate-200 px-3 flex items-end pb-1 text-[11px] font-medium text-slate-400" style="width:${labelW}px;min-width:${labelW}px">Atividade</div>
+          <div style="width:${trackW}px"><div class="flex pt-1.5">${months}</div><div class="flex py-1">${daysRow}</div></div>
+        </div>
+        <div class="relative">${body}</div>
+      </div>`;
+
+    // Na primeira abertura, rola até perto de hoje
+    const g = document.getElementById('gantt');
+    if (!g.dataset.scrolled && ti > 0) { g.scrollLeft = Math.max(0, (ti - 2) * R.w); g.dataset.scrolled = '1'; }
   }
 
   // ----- Anotações -----
@@ -801,7 +1057,10 @@
     document.getElementById('cfg-cats').innerHTML = S.categories.map(c => {
       const n = S.activities.filter(a => !a.archived && !isDone(a) && a.category === c.name).length;
       return `<div class="flex items-center justify-between py-2.5">
-        <span class="text-sm text-slate-700">${esc(c.name)} <span class="text-xs text-slate-400">${n ? `· ${n} aberta${n > 1 ? 's' : ''}` : ''}</span></span>
+        <span class="flex items-center gap-2.5 text-sm text-slate-700">
+          <label class="relative w-6 h-6 rounded-full cursor-pointer flex-shrink-0 ring-1 ring-black/10" style="background:${catColor(c.name)}" title="Trocar cor">
+            <input type="color" data-cat-color="${esc(c.id)}" value="${catColor(c.name)}" class="absolute inset-0 opacity-0 cursor-pointer">
+          </label>${esc(c.name)} <span class="text-xs text-slate-400">${n ? `· ${n} aberta${n > 1 ? 's' : ''}` : ''}</span></span>
         <button data-action="del-cat" data-id="${esc(c.id)}" class="p-1.5 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50" aria-label="Excluir">${icon('trash')}</button></div>`;
     }).join('') || '<p class="text-xs text-slate-400 py-2">Nenhuma categoria.</p>';
 
@@ -811,7 +1070,7 @@
   }
 
   // ----- Geral -----
-  const TITLES = { hoje: 'Hoje', proximos: 'Próximos dias', notas: 'Anotações', concluidas: 'Concluídas', config: 'Configurações', busca: 'Busca' };
+  const TITLES = { quadro: 'Quadro', hoje: 'Hoje', gantt: 'Cronograma', notas: 'Anotações', concluidas: 'Concluídas', config: 'Configurações', busca: 'Busca' };
 
   function render() {
     S.activities.forEach(syncStatus);
@@ -832,9 +1091,11 @@
       b.classList.toggle('text-brand-600', on); b.classList.toggle('text-slate-500', !on);
     });
 
-    if (view === 'hoje' || view === 'proximos') renderChips();
+    document.getElementById('wrap').className = (view === 'quadro' || view === 'gantt') ? 'px-4 md:px-6 py-4 md:py-6' : 'max-w-3xl mx-auto px-4 md:px-6 py-4 md:py-6';
+    if (view === 'hoje') renderChips();
     if (view === 'hoje') renderHoje();
-    else if (view === 'proximos') renderProximos();
+    else if (view === 'quadro') renderQuadro();
+    else if (view === 'gantt') renderGantt();
     else if (view === 'notas') renderNotas();
     else if (view === 'concluidas') renderConcluidas();
     else if (view === 'config') renderConfig();
@@ -857,19 +1118,20 @@
     if (id && !a) return;
     if (a) {
       draft = {
-        id: a.id, title: a.title || '', dueDate: a.dueDate || '', category: a.category || '',
+        id: a.id, title: a.title || '', startDate: a.startDate || '', dueDate: a.dueDate || '', category: a.category || '',
         important: isImportant(a),
         recurrence: a.recurrence && a.recurrence.type ? { type: a.recurrence.type, days: [...(a.recurrence.days || [])] } : { type: 'none', days: [] },
         statusChoice: isDone(a) ? 'Concluída' : (a.statusManual && (a.status === 'Pendente' || a.status === 'Em andamento')) ? a.status : 'auto',
         description: a.description || '',
+        responsible: a.responsible || '',
         subtasks: clean(a.subtasks || []),
         originNoteDate: a.originNoteDate || null
       };
     } else {
       draft = {
-        id: null, title: '', dueDate: today(), category: S.catFilter !== 'ALL' ? S.catFilter : '',
+        id: null, title: '', startDate: '', dueDate: today(), category: S.catFilter !== 'ALL' ? S.catFilter : '',
         important: false, recurrence: { type: 'none', days: [] }, statusChoice: 'auto',
-        description: '', subtasks: [], originNoteDate: null, ...preset
+        description: '', subtasks: [], originNoteDate: null, responsible: '', ...preset
       };
     }
     draftOriginal = JSON.stringify(draft);
@@ -885,8 +1147,10 @@
     const g = id => document.getElementById(id);
     if (g('sh-title')) draft.title = g('sh-title').value;
     if (g('sh-date')) draft.dueDate = g('sh-date').value;
+    if (g('sh-start')) draft.startDate = g('sh-start').value;
     if (g('sh-cat')) draft.category = g('sh-cat').value;
     if (g('sh-desc')) draft.description = g('sh-desc').value;
+    if (g('sh-resp')) draft.responsible = g('sh-resp').value;
     draft.subtasks.forEach(s => { const el = document.querySelector(`[data-sub-title="${s.id}"]`); if (el) s.title = el.value; });
   }
 
@@ -897,6 +1161,7 @@
       .concat(S.categories.map(c => `<option value="${esc(c.name)}" ${c.name === d.category ? 'selected' : ''}>${esc(c.name)}</option>`));
     if (d.category && !S.categories.some(c => c.name === d.category)) catOpts.push(`<option value="${esc(d.category)}" selected>${esc(d.category)}</option>`);
 
+    const startChip = (val, label) => `<button type="button" data-action="sh-start" data-val="${val}" class="px-2.5 py-1 rounded-full text-xs font-medium border ${d.startDate === val ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}">${label}</button>`;
     const dateChip = (val, label) => `<button type="button" data-action="sh-date" data-val="${val}" class="px-2.5 py-1 rounded-full text-xs font-medium border ${d.dueDate === val ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}">${label}</button>`;
     const recOpts = [['none', 'Não repete'], ['daily', 'Todo dia'], ['weekdays', 'Dias úteis (seg a sex)'], ['weekly', 'Toda semana'], ['monthly', 'Todo mês'], ['days', 'Escolher dias da semana']]
       .map(([v, l]) => `<option value="${v}" ${d.recurrence.type === v ? 'selected' : ''}>${l}</option>`).join('');
@@ -927,10 +1192,17 @@
       <div class="flex items-center gap-1.5 -mt-2 text-xs text-slate-400">${icon('calendar', 'w-3.5 h-3.5')}${createdInfo}</div>
 
       <div>
-        <label class="block text-xs font-medium text-slate-500 mb-1.5">Pretendo terminar até</label>
-        <div class="flex flex-wrap items-center gap-2">
-          <input id="sh-date" type="date" value="${esc(d.dueDate)}" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20">
-          ${dateChip(t, 'Hoje')}${dateChip(addDays(t, 1), 'Amanhã')}${dateChip('', 'Sem data')}
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1.5">Data de início</label>
+            <input id="sh-start" type="date" value="${esc(d.startDate)}" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20">
+            <div class="flex flex-wrap gap-1.5 mt-1.5">${startChip(t, 'Hoje')}${startChip('', 'Sem data')}</div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1.5">Data de término</label>
+            <input id="sh-date" type="date" value="${esc(d.dueDate)}" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20">
+            <div class="flex flex-wrap gap-1.5 mt-1.5">${dateChip(t, 'Hoje')}${dateChip(addDays(t, 1), 'Amanhã')}${dateChip('', 'Sem data')}</div>
+          </div>
         </div>
       </div>
 
@@ -943,6 +1215,15 @@
           <label class="block text-xs font-medium text-slate-500 mb-1.5">Categoria</label>
           <select id="sh-cat" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20">${catOpts.join('')}</select>
         </div>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-slate-500 mb-1.5">Responsável <span class="font-normal text-slate-400">(para quem você delegou)</span></label>
+        <input id="sh-resp" list="resp-list" value="${esc(d.responsible)}" placeholder="Eu mesmo (deixe vazio)" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500" autocomplete="off">
+        <datalist id="resp-list">${people().map(n => `<option value="${esc(n)}">`).join('')}</datalist>
+        ${people().length ? `<div class="flex flex-wrap gap-1.5 mt-2">${['', ...people().slice(0, 6)].map(n => `
+          <button type="button" data-action="sh-resp" data-val="${esc(n)}" class="inline-flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full text-xs font-medium border ${d.responsible.trim() === n ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}">
+            ${n ? avatar(n, 'w-5 h-5 text-[9px]') : `<span class="w-5 h-5 rounded-full inline-flex items-center justify-center bg-brand-600 text-white">${icon('user', 'w-3 h-3')}</span>`}${n ? esc(n) : 'Eu'}
+          </button>`).join('')}</div>` : ''}
       </div>
       ${d.recurrence.type === 'days' ? `<div class="flex gap-1.5 -mt-2">${WEEK_SHORT.map((w, i) => `<button type="button" data-action="sh-day" data-day="${i}" class="flex-1 py-1.5 rounded-lg text-xs font-medium border ${d.recurrence.days.includes(i) ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200'}">${w}</button>`).join('')}</div>` : ''}
       ${d.recurrence.type !== 'none' ? '<p class="text-xs text-slate-400 -mt-2">Ao concluir, a próxima já é criada sozinha.</p>' : ''}
@@ -1015,6 +1296,7 @@
     if (!d.title.trim()) { toast('Escreva o nome da atividade'); document.getElementById('sh-title').focus(); return; }
     if (d.recurrence.type === 'days' && !d.recurrence.days.length) { toast('Escolha pelo menos um dia da semana'); return; }
     if (d.recurrence.type !== 'none' && !d.dueDate) d.dueDate = today();
+    if (d.startDate && d.dueDate && d.startDate > d.dueDate) { toast('A data de início não pode ser depois da data de término'); return; }
 
     const now = nowIso();
     let a = d.id ? findAct(d.id) : null;
@@ -1026,6 +1308,7 @@
     const wasDone = isDone(a);
     a.title = d.title.trim();
     a.dueDate = d.dueDate || null;
+    a.startDate = d.startDate || null;
     a.category = d.category || '';
     a.priority = d.important ? (isImportant(a) ? a.priority : 'Alta') : (isImportant(a) ? 'Média' : (a.priority || 'Média'));
     a.recurrence = d.recurrence.type === 'none' ? null : {
@@ -1034,6 +1317,9 @@
       dayOfMonth: d.recurrence.type === 'monthly' && a.dueDate ? parseYmd(a.dueDate).getDate() : null
     };
     a.description = d.description.trim();
+    const newResp = (d.responsible || '').trim();
+    if (newResp !== (a.responsible || '') && Array.isArray(a.history)) a.history.push({ timestamp: now, action: newResp ? `Delegada para ${newResp}` : 'Responsável: eu' });
+    a.responsible = newResp;
     a.subtasks = d.subtasks.map(s => ({ ...s, title: s.title.trim() }));
     a.originNoteDate = d.originNoteDate || a.originNoteDate || null;
     if (!Array.isArray(a.history)) a.history = [];
@@ -1081,7 +1367,7 @@
     const now = nowIso();
     const a = { id: newId(), number: nextNumber(), title, category: S.catFilter !== 'ALL' ? S.catFilter : '', priority: 'Média',
       status: 'Pendente', statusManual: false, createdAt: now, startDate: null, dueDate: today(), realStartAt: null,
-      completedAt: null, description: '', tags: [], subtasks: [], archived: false, originNoteDate: null, recurrence: null,
+      completedAt: null, description: '', tags: [], subtasks: [], archived: false, originNoteDate: null, recurrence: null, responsible: '',
       history: [{ timestamp: now, action: 'Atividade cadastrada' }] };
     S.activities.unshift(a);
     render();
@@ -1134,6 +1420,14 @@
       case 'toggle': e.stopPropagation(); toggleDone(id); break;
       case 'star': e.stopPropagation(); toggleStar(id); break;
       case 'cat': S.catFilter = el.dataset.cat; render(); break;
+      case 'group': S.groupBy = el.dataset.val; render(); break;
+      case 'col-add': openSheet(null, S.groupBy === 'person' ? { responsible: el.dataset.key } : { category: el.dataset.key }); break;
+      case 'col-done': S.colDoneOpen[el.dataset.key] = !S.colDoneOpen[el.dataset.key]; render(); break;
+      case 'gantt-range': S.ganttRange = el.dataset.val; S.ganttOffset = 0; document.getElementById('gantt').dataset.scrolled = ''; render(); break;
+      case 'gantt-prev': S.ganttOffset--; render(); break;
+      case 'gantt-next': S.ganttOffset++; render(); break;
+      case 'gantt-today': S.ganttOffset = 0; document.getElementById('gantt').dataset.scrolled = ''; render(); break;
+      case 'sh-resp': readSheet(); draft.responsible = el.dataset.val; renderSheet(); break;
       case 'toggle-done-today': S.showDoneToday = !S.showDoneToday; render(); break;
       case 'more-done': S.doneLimit += 60; render(); break;
       case 'toggle-search': {
@@ -1172,6 +1466,7 @@
         break;
       }
       case 'sh-date': readSheet(); draft.dueDate = el.dataset.val; renderSheet(); break;
+      case 'sh-start': readSheet(); draft.startDate = el.dataset.val; renderSheet(); break;
       case 'sh-day': {
         readSheet();
         const n = Number(el.dataset.day);
@@ -1219,6 +1514,11 @@
       renderSheet();
     }
     if (e.target.id === 'import-input' && e.target.files[0]) { importJSON(e.target.files[0]); e.target.value = ''; }
+    if (e.target.id === 'gantt-done') { S.ganttShowDone = e.target.checked; render(); }
+    if (e.target.dataset && e.target.dataset.catColor) {
+      const c = S.categories.find(x => x.id === e.target.dataset.catColor);
+      if (c) { c.color = e.target.value; render(); saveCat(c).then(ok => toast(ok ? 'Cor salva ✓' : `Erro (${lastError})`)); }
+    }
   });
 
   document.addEventListener('keydown', e => {
@@ -1229,6 +1529,50 @@
       else if (draft) closeSheet();
     }
   });
+
+  // Arrastar cards entre colunas do Quadro
+  let dragId = null;
+  document.addEventListener('dragstart', e => {
+    const card = e.target.closest && e.target.closest('[data-drag]');
+    if (!card) return;
+    dragId = card.dataset.drag;
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', dragId); } catch {}
+    setTimeout(() => card.classList.add('opacity-40'), 0);
+  });
+  document.addEventListener('dragend', () => {
+    dragId = null;
+    document.querySelectorAll('[data-drag].opacity-40').forEach(c => c.classList.remove('opacity-40'));
+    document.querySelectorAll('.board-col.ring-2').forEach(c => c.classList.remove('ring-2', 'ring-brand-500'));
+  });
+  document.addEventListener('dragover', e => {
+    const col = e.target.closest && e.target.closest('[data-drop]');
+    if (!col || !dragId) return;
+    e.preventDefault();
+    document.querySelectorAll('.board-col.ring-2').forEach(c => { if (c !== col) c.classList.remove('ring-2', 'ring-brand-500'); });
+    col.classList.add('ring-2', 'ring-brand-500');
+  });
+  document.addEventListener('drop', async e => {
+    const col = e.target.closest && e.target.closest('[data-drop]');
+    if (!col || !dragId) return;
+    e.preventDefault();
+    const a = findAct(dragId);
+    const key = col.dataset.drop;
+    dragId = null;
+    if (!a || groupKeyOf(a) === key) { render(); return; }
+    if (S.groupBy === 'person') {
+      a.responsible = key;
+      a.history.push({ timestamp: nowIso(), action: key ? `Delegada para ${key}` : 'Responsável: eu' });
+    } else {
+      a.category = key;
+      a.history.push({ timestamp: nowIso(), action: `Categoria alterada para ${key || 'Sem categoria'}` });
+    }
+    render();
+    const ok = await saveAct(a);
+    toast(ok ? `Movida para ${groupMeta(key).name} ✓` : `Erro ao salvar (${lastError})`);
+  });
+  let resizeTimer = null;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (S.view === 'gantt') render(); }, 200); });
 
   document.getElementById('quick-add').addEventListener('submit', e => {
     e.preventDefault();
@@ -1272,6 +1616,11 @@
   paintStaticIcons();
   render();
   initCloud();
+
+  // Permite instalar como aplicativo
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker:', err));
+  }
 </script>
 </body>
 </html>

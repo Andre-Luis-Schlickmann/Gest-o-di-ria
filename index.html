@@ -54,11 +54,13 @@
       </button>
     </div>
     <nav class="px-3 space-y-0.5 flex-1">
-      <button data-action="view" data-view="quadro" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
-        <span data-icon="board"></span>Quadro
+      <button data-action="board-nav" data-view="quadro" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
+        <span class="flex items-center gap-2.5"><span data-icon="board"></span>Quadro</span>
+        <span id="side-cats-chev" data-icon="chevronDown" data-cls="w-3.5 h-3.5" class="text-slate-400 transition -rotate-90"></span>
       </button>
+      <div id="side-cats" class="hidden ml-3 pl-2 border-l border-slate-200 max-h-[45vh] overflow-y-auto"></div>
       <button data-action="view" data-view="hoje" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
-        <span class="flex items-center gap-2.5"><span data-icon="sun"></span>Hoje</span>
+        <span class="flex items-center gap-2.5"><span data-icon="sun"></span>Próximas atividades</span>
         <span class="badge-hoje text-xs font-semibold text-slate-400"></span>
       </button>
       <button data-action="view" data-view="gantt" class="nav-btn w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100">
@@ -117,15 +119,25 @@
             <button type="submit" class="px-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white" aria-label="Adicionar"><span data-icon="plus" data-cls="w-5 h-5"></span></button>
           </form>
 
-          <div class="cat-chips flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0"></div>
           <div id="hoje-list" class="space-y-5"></div>
         </section>
 
         <!-- QUADRO -->
         <section id="view-quadro" class="view hidden">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <div class="group-toggle flex items-center gap-1 p-1 bg-slate-200/60 rounded-lg"></div>
-            <span class="text-xs text-slate-400 hidden md:inline">Dica: arraste os cards de uma coluna para outra</span>
+            <div class="flex items-center gap-2">
+              <div class="group-toggle flex items-center gap-1 p-1 bg-slate-200/60 rounded-lg"></div>
+              <button id="col-panel-btn" data-action="col-panel" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50"><span data-icon="settings" data-cls="w-3.5 h-3.5"></span>Colunas</button>
+            </div>
+            <span class="text-xs text-slate-400 hidden lg:inline">Dica: arraste os cards de uma coluna para outra</span>
+          </div>
+          <div id="col-panel" class="hidden bg-white rounded-xl border border-slate-200 p-3 mb-3 max-w-md">
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Colunas do quadro</h3>
+              <button data-action="col-panel" class="p-1 rounded text-slate-400 hover:bg-slate-100" aria-label="Fechar"><span data-icon="x"></span></button>
+            </div>
+            <p class="text-xs text-slate-400 mb-2">Marque as que aparecem (no quadro e no cronograma), use as setas para mudar a ordem e o lápis para renomear.</p>
+            <div id="col-panel-list" class="divide-y divide-slate-100"></div>
           </div>
           <div id="board" class="flex gap-3 overflow-x-auto snap-x snap-mandatory md:snap-none pb-4 -mx-4 px-4 md:-mx-6 md:px-6 items-start"></div>
         </section>
@@ -140,10 +152,22 @@
               <button data-action="gantt-today" class="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200/60">Hoje</button>
               <button data-action="gantt-next" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200/60" aria-label="Avançar"><span data-icon="chevronRight"></span></button>
             </div>
+            <div class="flex items-center gap-1">
+              <button data-action="gantt-expand-all" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200/60">Expandir tudo</button>
+              <button data-action="gantt-collapse-all" class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200/60">Recolher tudo</button>
+              <button data-action="gantt-panel" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50"><span data-icon="settings" data-cls="w-3.5 h-3.5"></span>Categorias</button>
+            </div>
             <label class="flex items-center gap-1.5 text-xs text-slate-600 ml-auto cursor-pointer select-none"><input type="checkbox" id="gantt-done" class="rounded"> Mostrar concluídas</label>
           </div>
+          <div id="gantt-panel" class="hidden bg-white rounded-xl border border-slate-200 p-3 mb-3 max-w-md">
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Categorias</h3>
+              <button data-action="gantt-panel" class="p-1 rounded text-slate-400 hover:bg-slate-100" aria-label="Fechar"><span data-icon="x"></span></button>
+            </div>
+            <p class="text-xs text-slate-400 mb-2">Só as categorias marcadas aparecem no quadro e no cronograma.</p>
+            <div id="gantt-panel-list" class="divide-y divide-slate-100"></div>
+          </div>
           <div id="gantt" class="bg-white rounded-xl border border-slate-200 overflow-x-auto relative"></div>
-          <p id="gantt-note" class="text-xs text-slate-400 mt-2"></p>
         </section>
 
         <!-- ANOTAÇÕES -->
@@ -245,7 +269,7 @@
   <div class="grid grid-cols-5 h-16">
     <button data-action="view" data-view="quadro" class="tab-btn flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500"><span data-icon="board" data-cls="w-5 h-5"></span>Quadro</button>
     <button data-action="view" data-view="hoje" class="tab-btn relative flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500">
-      <span data-icon="sun" data-cls="w-5 h-5"></span>Hoje
+      <span data-icon="sun" data-cls="w-5 h-5"></span>Próximas
       <span class="badge-hoje-m absolute top-1.5 left-1/2 ml-2 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-semibold flex items-center justify-center hidden"></span>
     </button>
     <button data-action="view" data-view="gantt" class="tab-btn flex flex-col items-center justify-center gap-0.5 text-[11px] text-slate-500"><span data-icon="gantt" data-cls="w-5 h-5"></span>Cronograma</button>
@@ -279,6 +303,27 @@
     <div class="flex gap-2 mt-5">
       <button data-action="confirm-no" class="flex-1 py-2.5 rounded-lg text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
       <button data-action="confirm-yes" id="confirm-yes" class="flex-1 py-2.5 rounded-lg text-sm font-semibold bg-rose-600 hover:bg-rose-700 text-white">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MENSAGEM DE COBRANÇA ===== -->
+<div id="msg-modal" class="hidden fixed inset-0 z-[65] bg-slate-900/40 flex items-end md:items-center justify-center md:p-4">
+  <div class="bg-white w-full md:max-w-lg rounded-t-2xl md:rounded-2xl shadow-xl flex flex-col max-h-[92vh]">
+    <div class="flex items-center justify-between px-4 pt-4 pb-2">
+      <span id="msg-title" class="text-sm font-semibold text-slate-900">Cobrar</span>
+      <button data-action="msg-close" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100" aria-label="Fechar"><span data-icon="x" data-cls="w-5 h-5"></span></button>
+    </div>
+    <div class="px-4 pb-3 overflow-y-auto">
+      <p class="text-xs text-slate-500 mb-2">Mensagem pronta. Você pode editar antes de enviar.</p>
+      <textarea id="msg-text" rows="11" class="w-full p-3 rounded-lg border border-slate-200 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"></textarea>
+      <label class="flex items-center gap-2 mt-2 text-xs text-slate-600 cursor-pointer select-none">
+        <input id="msg-log" type="checkbox" checked class="rounded"> Registrar "cobrança enviada" no andamento das atividades
+      </label>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 px-4 py-3 border-t border-slate-100 safe-bottom">
+      <button data-action="msg-copy" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200"><span data-icon="copy"></span>Copiar texto</button>
+      <a id="msg-wa" data-action="msg-wa" href="#" target="_blank" rel="noopener" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700"><span data-icon="send"></span>Abrir no WhatsApp</a>
     </div>
   </div>
 </div>
@@ -318,6 +363,14 @@
     ganttOffset: 0,
     ganttShowDone: false,
     colDoneOpen: {},
+    boardMenuOpen: true,
+    colPanelOpen: false,
+    ganttPanelOpen: false,
+    ganttCollapsed: {},
+    ganttKeys: [],
+    renaming: null,
+    renameValue: '',
+    colorPickFor: null,
     catFilter: 'ALL',
     search: '',
     categories: [],
@@ -354,7 +407,12 @@
     arrowRight: '<path d="M5 12h14M12 5l7 7-7 7"/>',
     board: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 7v7M12 7v4M16 7v9"/>',
     gantt: '<path d="M3 3v18h18"/><path d="M7 7h6M10 12h8M7 17h5"/>',
-    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    pencil: '<path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+    chevronUp: '<path d="m18 15-6-6-6 6"/>',
+    message: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+    copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
   };
   function icon(name, cls = 'w-4 h-4', filled = false) {
     return `<svg class="${cls} flex-shrink-0" viewBox="0 0 24 24" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
@@ -381,10 +439,13 @@
   const WEEK_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
   // ----- Cores das categorias e das pessoas -----
-  const PALETTE = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#f43f5e', '#06b6d4', '#f97316', '#14b8a6', '#ec4899', '#6366f1', '#84cc16', '#64748b'];
+  // Cores em tons pastel
+  const PALETTE = ['#a5c8f5', '#a8dcc0', '#f5d48f', '#c9b8f0', '#f4b3c0', '#9fd9e3', '#f7c39b', '#a3d9cf', '#f2b8d8', '#b7bff2', '#c8e2a0', '#c5ccd6'];
+  // Cores fortes da versão anterior -> trocadas automaticamente pela versão pastel
+  const OLD_PALETTE = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#f43f5e', '#06b6d4', '#f97316', '#14b8a6', '#ec4899', '#6366f1', '#84cc16', '#64748b'];
   const hashStr = str => { let h = 0; for (const ch of String(str)) h = (h * 31 + ch.charCodeAt(0)) | 0; return Math.abs(h); };
   function catColor(name) {
-    if (!name) return '#94a3b8';
+    if (!name) return '#d5dbe3';
     const c = S.categories.find(x => x.name === name);
     if (c && c.color) return c.color;
     return PALETTE[hashStr(name) % PALETTE.length];
@@ -396,9 +457,9 @@
     return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
   }
   function avatar(n, size = 'w-6 h-6 text-[10px]') {
-    return `<span title="${esc(n)}" class="${size} rounded-full inline-flex items-center justify-center font-semibold text-white flex-shrink-0" style="background:${personColor(n)}">${esc(initials(n))}</span>`;
+    return `<span title="${esc(n)}" class="${size} rounded-full inline-flex items-center justify-center font-semibold text-slate-700 flex-shrink-0" style="background:${personColor(n)}">${esc(initials(n))}</span>`;
   }
-  const meAvatar = (size = 'w-6 h-6') => `<span title="Eu" class="${size} rounded-full inline-flex items-center justify-center bg-brand-600 text-white flex-shrink-0">${icon('user', 'w-3 h-3')}</span>`;
+  const meAvatar = (size = 'w-6 h-6') => `<span title="Eu" class="${size} rounded-full inline-flex items-center justify-center flex-shrink-0" style="background:#bfd5f7;color:#1e3a8a">${icon('user', 'w-3 h-3')}</span>`;
   function people() {
     const count = {};
     S.activities.forEach(a => { const r = (a.responsible || '').trim(); if (r) count[r] = (count[r] || 0) + 1; });
@@ -536,6 +597,7 @@
       realStartAt: null,
       completedAt: null,
       nextSpawnedId: null,
+      updates: [],
       archived: false,
       subtasks: (a.subtasks || []).map(s => ({ ...s, status: 'pending', completedAt: null })),
       history: [{ timestamp: now, action: 'Criada automaticamente (atividade que se repete)' }]
@@ -582,8 +644,13 @@
     unsubs.forEach(u => u()); unsubs = [];
     unsubs.push(onSnapshot(colRef('categories'), async snap => {
       if (snap.empty) { for (const c of INITIAL_CATEGORIES) await saveCat(c); return; }
-      S.categories = snap.docs.map(d => d.data()).sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
-      // Dá uma cor própria (e salva) para categorias que ainda não têm
+      S.categories = snap.docs.map(d => d.data());
+      sortCats();
+      // Troca cores fortes antigas pelas pastel e dá cor para quem não tem
+      S.categories.forEach(c => {
+        const oi = OLD_PALETTE.indexOf((c.color || '').toLowerCase());
+        if (oi >= 0) { c.color = PALETTE[oi]; saveCat(c); }
+      });
       const used = new Set(S.categories.map(c => c.color).filter(Boolean));
       S.categories.filter(c => !c.color).forEach(c => {
         c.color = PALETTE.find(col => !used.has(col)) || PALETTE[hashStr(c.name) % PALETTE.length];
@@ -648,6 +715,7 @@
     if (a.responsible) meta.push(`<span class="inline-flex items-center gap-1 text-slate-500">${icon('user', 'w-3 h-3')}${esc(a.responsible)}</span>`);
     if (a.recurrence && a.recurrence.type && a.recurrence.type !== 'none') meta.push(`<span class="inline-flex items-center gap-1">${icon('repeat', 'w-3 h-3')}${esc(recLabel(a.recurrence))}</span>`);
     if (subs.length) meta.push(`<span class="inline-flex items-center gap-1">${icon('list', 'w-3 h-3')}${subsDone}/${subs.length}</span>`);
+    if ((a.updates || []).length) meta.push(`<span class="inline-flex items-center gap-1" title="${esc(lastUpdateLabel(a))}">${icon('message', 'w-3 h-3')}${a.updates.length}</span>`);
 
     let pill = '';
     if (!done && a.status === 'Em andamento') pill = '<span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap">Em andamento</span>';
@@ -694,13 +762,13 @@
     document.querySelectorAll('.cat-chips').forEach(el => { el.innerHTML = html; el.classList.toggle('hidden', !html); });
   }
 
+  // Próximas atividades: atrasadas + hoje + próximos 2 dias, separadas por dia (todas as categorias)
   function renderHoje() {
     const t = today();
-    const acts = activeActs();
+    const acts = activeActs(false);
     const open = acts.filter(a => !isDone(a));
     const overdue = sortActs(open.filter(a => a.dueDate && a.dueDate < t));
-    const todays = sortActs(open.filter(a => a.dueDate === t));
-    const doing = sortActs(open.filter(a => a.status === 'Em andamento' && !(a.dueDate && a.dueDate <= t)));
+    const days = [t, addDays(t, 1), addDays(t, 2)];
     const doneToday = acts.filter(a => isDone(a) && localDate(a.completedAt) === t)
       .sort((a, b) => (b.completedAt || '').localeCompare(a.completedAt || ''));
 
@@ -709,18 +777,28 @@
     const plannedDone = plannedAll.filter(isDone).length;
     const pct = plannedAll.length ? Math.round(plannedDone / plannedAll.length * 100) : 0;
     document.getElementById('hoje-bar').style.width = pct + '%';
-    document.getElementById('hoje-progress').textContent = plannedAll.length ? `${plannedDone} de ${plannedAll.length} feitas` : 'Nada programado';
+    document.getElementById('hoje-progress').textContent = plannedAll.length ? `${plannedDone} de ${plannedAll.length} de hoje feitas` : 'Nada programado para hoje';
 
-    let html = groupHTML('Atrasadas', overdue, { tone: 'rose' })
-      + groupHTML('Para hoje', todays, { showDate: false })
-      + groupHTML('Em andamento', doing, { tone: 'blue' });
+    const dayTitle = (d, i) => {
+      const dt = parseYmd(d);
+      const wd = dt.toLocaleDateString('pt-BR', { weekday: 'long' });
+      const dm = `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}`;
+      const prefix = i === 0 ? 'Hoje' : i === 1 ? 'Amanhã' : wd.charAt(0).toUpperCase() + wd.slice(1);
+      return `${prefix} <span class="normal-case font-normal text-slate-400">· ${i < 2 ? wd + ', ' : ''}${dm}</span>`;
+    };
 
-    if (!overdue.length && !todays.length && !doing.length) {
-      html = `<div class="text-center py-12 text-slate-400">
-        <div class="w-12 h-12 mx-auto rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mb-3">${icon('check', 'w-6 h-6')}</div>
-        <p class="text-sm font-medium text-slate-600">Tudo em dia!</p>
-        <p class="text-xs mt-1">Nenhuma atividade pendente para hoje.</p></div>`;
-    }
+    let html = groupHTML('Atrasadas', overdue, { tone: 'rose' });
+    days.forEach((d, i) => {
+      const list = sortActs(open.filter(a => a.dueDate === d));
+      if (list.length) {
+        html += groupHTML(dayTitle(d, i), list, { tone: i === 0 ? 'blue' : 'slate', showDate: false });
+      } else {
+        html += `<div>
+          <div class="flex items-center gap-2 px-1 mb-2"><h3 class="text-xs font-semibold uppercase tracking-wide ${i === 0 ? 'text-blue-700' : 'text-slate-500'}">${dayTitle(d, i)}</h3></div>
+          <div class="rounded-xl border border-dashed border-slate-200 px-3 py-3 text-xs text-slate-400">Nenhuma pendência para este dia.</div>
+        </div>`;
+      }
+    });
 
     if (doneToday.length) {
       html += `
@@ -759,7 +837,8 @@
       (a.description || '').toLowerCase().includes(q) ||
       (a.category || '').toLowerCase().includes(q) ||
       (a.responsible || '').toLowerCase().includes(q) ||
-      (a.subtasks || []).some(s => (s.title || '').toLowerCase().includes(q))));
+      (a.subtasks || []).some(s => (s.title || '').toLowerCase().includes(q)) ||
+      (a.updates || []).some(u => (u.text || '').toLowerCase().includes(q))));
     const open = sortActs(res.filter(a => !isDone(a)));
     const done = res.filter(isDone).sort((a, b) => (b.completedAt || '').localeCompare(a.completedAt || ''));
     const notes = Object.entries(S.notes).filter(([, n]) => (n.freeText || '').toLowerCase().includes(q)).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 10);
@@ -776,10 +855,210 @@
     document.getElementById('search-list').innerHTML = `<div class="space-y-5">${html}</div>`;
   }
 
+  // ----- Categorias: ordem, visibilidade, nome e cor -----
+  function sortCats() {
+    S.categories.sort((a, b) => ((a.order ?? 1e9) - (b.order ?? 1e9)) || a.name.localeCompare(b.name, 'pt-BR'));
+  }
+  function moveCategory(id, dir, visibleOnly = false) {
+    const list = S.categories;
+    const i = list.findIndex(c => c.id === id);
+    if (i < 0) return;
+    let j = i + dir;
+    if (visibleOnly) while (j >= 0 && j < list.length && list[j].hidden) j += dir;
+    if (j < 0 || j >= list.length) return;
+    const [item] = list.splice(i, 1);
+    list.splice(j, 0, item);
+    list.forEach((c, k) => { if (c.order !== k) { c.order = k; saveCat(c); } });
+    render();
+  }
+  function toggleCategoryVisible(id) {
+    const c = S.categories.find(x => x.id === id);
+    if (!c) return;
+    c.hidden = !c.hidden;
+    render();
+    saveCat(c);
+  }
+  async function renameCategory(id, value) {
+    const c = S.categories.find(x => x.id === id);
+    const name = String(value || '').trim();
+    S.renaming = null;
+    if (!c || !name || name === c.name) { render(); return; }
+    if (S.categories.some(x => x.id !== id && x.name.toLowerCase() === name.toLowerCase())) { toast('Já existe uma categoria com esse nome'); render(); return; }
+    const old = c.name;
+    c.name = name;
+    const affected = S.activities.filter(a => a.category === old);
+    affected.forEach(a => { a.category = name; });
+    if (S.catFilter === old) S.catFilter = name;
+    render();
+    const ok = await saveCat(c);
+    for (const a of affected) await saveAct(a);
+    toast(ok ? `Renomeada para "${name}"${affected.length ? ` (${affected.length} atividade${affected.length > 1 ? 's' : ''})` : ''}` : `Erro (${lastError})`);
+  }
+  function setCategoryColor(id, color) {
+    const c = S.categories.find(x => x.id === id);
+    if (!c) return;
+    c.color = color;
+    S.colorPickFor = null;
+    render();
+    saveCat(c).then(ok => { if (!ok) toast(`Erro (${lastError})`); });
+  }
+
+  // Lista de categorias reaproveitada no menu lateral, no painel "Colunas" e nas Configurações
+  function catListHTML({ ctx, compact = false, allowDelete = false }) {
+    if (!S.categories.length) return '<p class="text-xs text-slate-400 py-2">Nenhuma categoria.</p>';
+    const last = S.categories.length - 1;
+    return S.categories.map((c, i) => {
+      const visible = !c.hidden;
+      const n = S.activities.filter(a => !a.archived && !isDone(a) && a.category === c.name).length;
+      const btn = 'p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:hover:bg-transparent';
+      const editing = S.renaming === c.id;
+      return `
+        <div class="group ${compact ? 'py-0.5' : 'py-1.5'}">
+          <div class="flex items-center gap-1.5">
+            <button data-action="cat-vis" data-id="${esc(c.id)}" title="${visible ? 'Ocultar do quadro' : 'Mostrar no quadro'}"
+              class="w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition ${visible ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 bg-white'}">${visible ? icon('check', 'w-3 h-3') : ''}</button>
+            <button data-action="cat-color-pick" data-id="${esc(c.id)}" title="Trocar cor" class="${compact ? 'w-3 h-3' : 'w-4 h-4'} rounded-full flex-shrink-0 ring-1 ring-black/10 ml-1" style="background:${catColor(c.name)}"></button>
+            ${editing
+              ? `<input data-rename-input="${esc(c.id)}" data-ctx="${ctx}" value="${esc(S.renameValue)}" class="flex-1 min-w-0 text-sm px-2 py-0.5 rounded border border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20">
+                 <button data-action="cat-rename-ok" data-id="${esc(c.id)}" class="p-1 rounded text-emerald-600 hover:bg-emerald-50" title="Salvar">${icon('check', 'w-3.5 h-3.5')}</button>
+                 <button data-action="cat-rename-cancel" class="p-1 rounded text-slate-400 hover:bg-slate-100" title="Cancelar">${icon('x', 'w-3.5 h-3.5')}</button>`
+              : `<span class="flex-1 min-w-0 truncate ${compact ? 'text-[13px]' : 'text-sm'} ${visible ? 'text-slate-700' : 'text-slate-400'} ml-1">${esc(c.name)}${n ? ` <span class="text-xs text-slate-400">${n}</span>` : ''}</span>
+                 <span class="flex items-center ${compact ? 'opacity-0 group-hover:opacity-100 focus-within:opacity-100' : ''} transition">
+                   <button data-action="cat-rename" data-id="${esc(c.id)}" class="${btn}" title="Renomear">${icon('pencil', 'w-3.5 h-3.5')}</button>
+                   <button data-action="cat-move" data-id="${esc(c.id)}" data-dir="-1" class="${btn}" title="Mover para cima / esquerda" ${i === 0 ? 'disabled' : ''}>${icon('chevronUp', 'w-3.5 h-3.5')}</button>
+                   <button data-action="cat-move" data-id="${esc(c.id)}" data-dir="1" class="${btn}" title="Mover para baixo / direita" ${i === last ? 'disabled' : ''}>${icon('chevronDown', 'w-3.5 h-3.5')}</button>
+                   ${allowDelete ? `<button data-action="del-cat" data-id="${esc(c.id)}" class="p-1 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50" title="Excluir">${icon('trash', 'w-3.5 h-3.5')}</button>` : ''}
+                 </span>`}
+          </div>
+          ${S.colorPickFor === c.id ? `
+            <div class="flex flex-wrap gap-1.5 mt-2 mb-1 ${compact ? 'pl-5' : 'pl-6'}">
+              ${PALETTE.map(col => `<button data-action="cat-color" data-id="${esc(c.id)}" data-color="${col}" class="w-6 h-6 rounded-full ring-1 ring-black/10 ${catColor(c.name).toLowerCase() === col ? 'ring-2 ring-slate-700' : ''}" style="background:${col}" aria-label="Cor"></button>`).join('')}
+            </div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  function renderCatLists() {
+    const side = document.getElementById('side-cats');
+    const showSide = S.boardMenuOpen && S.view === 'quadro';
+    side.classList.toggle('hidden', !showSide);
+    document.getElementById('side-cats-chev').classList.toggle('-rotate-90', !showSide);
+    if (showSide) side.innerHTML = `<div class="py-1">${catListHTML({ ctx: 'side', compact: true })}</div>`;
+
+    const panel = document.getElementById('col-panel');
+    const showPanel = S.colPanelOpen && S.view === 'quadro' && S.groupBy === 'category';
+    panel.classList.toggle('hidden', !showPanel);
+    document.getElementById('col-panel-btn').classList.toggle('hidden', S.groupBy !== 'category');
+    if (showPanel) document.getElementById('col-panel-list').innerHTML = catListHTML({ ctx: 'panel' });
+
+    const gPanel = document.getElementById('gantt-panel');
+    gPanel.classList.toggle('hidden', !(S.ganttPanelOpen && S.view === 'gantt'));
+    if (S.ganttPanelOpen && S.view === 'gantt') document.getElementById('gantt-panel-list').innerHTML = catListHTML({ ctx: 'gpanel' });
+
+    if (S.view === 'config') document.getElementById('cfg-cats').innerHTML = catListHTML({ ctx: 'cfg', allowDelete: true });
+
+    // Mantém o foco no campo de renomear depois de redesenhar
+    if (S.renaming) {
+      const inp = [...document.querySelectorAll('[data-rename-input]')].find(el => el.offsetParent !== null);
+      if (inp && document.activeElement !== inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+    }
+  }
+
+  // ----- Registro de andamento -----
+  const fmtDM = ymdStr => ymdStr ? ymdStr.split('-').reverse().slice(0, 2).join('/') : '';
+  function fmtStamp(iso) {
+    const d = new Date(iso);
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function lastUpdateLabel(a) {
+    const u = (a.updates || [])[(a.updates || []).length - 1];
+    return u ? `Último registro (${fmtStamp(u.at)}): ${u.text}` : '';
+  }
+  // Grava um registro direto na atividade (e mantém a janela aberta em sincronia)
+  async function addUpdate(actId, text, { silent = false } = {}) {
+    const entry = { id: 'upd-' + Date.now() + Math.random().toString(36).slice(2, 5), at: nowIso(), text: String(text).trim() };
+    if (!entry.text) return null;
+    const a = actId ? findAct(actId) : null;
+    if (draft && draft.id === actId) {
+      draft.updates.push(entry);
+      const orig = JSON.parse(draftOriginal); orig.updates = (orig.updates || []).concat([entry]); draftOriginal = JSON.stringify(orig);
+    }
+    if (a) {
+      if (!Array.isArray(a.updates)) a.updates = [];
+      a.updates.push(entry);
+      const ok = await saveAct(a);
+      if (!ok && !silent) toast(`Erro ao salvar (${lastError})`);
+    }
+    return entry;
+  }
+  async function removeUpdate(actId, updId) {
+    if (draft) {
+      draft.updates = draft.updates.filter(u => u.id !== updId);
+      if (draft.id === actId) { const orig = JSON.parse(draftOriginal); orig.updates = (orig.updates || []).filter(u => u.id !== updId); draftOriginal = JSON.stringify(orig); }
+    }
+    const a = actId ? findAct(actId) : null;
+    if (a) { a.updates = (a.updates || []).filter(u => u.id !== updId); await saveAct(a); }
+  }
+
+  // ----- Cobrança -----
+  let msgCtx = null; // { actIds: [], logged: false }
+  function cobrancaText(name, acts) {
+    const t = today();
+    const first = String(name).trim().split(/\s+/)[0] || name;
+    const sorted = [...acts].sort((x, y) => (x.dueDate || '9999').localeCompare(y.dueDate || '9999'));
+    const lines = sorted.map((a, i) => {
+      let when;
+      if (!a.dueDate) when = 'sem prazo definido';
+      else if (a.dueDate < t) when = `ATRASADA (prazo era ${fmtDM(a.dueDate)})`;
+      else if (a.dueDate === t) when = 'vence HOJE';
+      else if (a.dueDate === addDays(t, 1)) when = `vence amanhã (${fmtDM(a.dueDate)})`;
+      else when = `prazo ${fmtDM(a.dueDate)}`;
+      let line = `${sorted.length > 1 ? (i + 1) + ') ' : '• '}${a.title} – ${when}`;
+      const missing = (a.subtasks || []).filter(x => x.status !== 'done').map(x => x.title);
+      if (missing.length) line += `\n   Falta: ${missing.join('; ')}`;
+      return line;
+    });
+    const intro = sorted.length === 1
+      ? `Oi ${first}, tudo bem? Como está esta atividade?`
+      : `Oi ${first}, tudo bem? Seguem as suas pendências comigo:`;
+    const outro = sorted.length === 1 ? 'Pode me dar um retorno? Obrigado!' : 'Pode me passar um retorno de como estão? Obrigado!';
+    return `${intro}\n\n${lines.join('\n')}\n\n${outro}`;
+  }
+  function openCobranca(name, acts) {
+    if (!acts.length) { toast('Nenhuma pendência para cobrar'); return; }
+    msgCtx = { actIds: acts.map(a => a.id), logged: false };
+    document.getElementById('msg-title').textContent = `Cobrar ${name}`;
+    document.getElementById('msg-text').value = cobrancaText(name, acts);
+    document.getElementById('msg-log').checked = true;
+    updateWaLink();
+    document.getElementById('msg-modal').classList.remove('hidden');
+  }
+  function updateWaLink() {
+    document.getElementById('msg-wa').href = 'https://wa.me/?text=' + encodeURIComponent(document.getElementById('msg-text').value);
+  }
+  function closeCobranca() { document.getElementById('msg-modal').classList.add('hidden'); msgCtx = null; }
+  async function logCobranca() {
+    if (!msgCtx || msgCtx.logged || !document.getElementById('msg-log').checked) return;
+    msgCtx.logged = true;
+    for (const id of msgCtx.actIds) await addUpdate(id, 'Cobrança enviada', { silent: true });
+    if (draft) renderSheet();
+    render();
+  }
+  async function copyCobranca() {
+    const ta = document.getElementById('msg-text');
+    let ok = false;
+    try { await navigator.clipboard.writeText(ta.value); ok = true; } catch {
+      try { ta.select(); ok = document.execCommand('copy'); } catch { ok = false; }
+    }
+    toast(ok ? 'Texto copiado ✓ Cole no WhatsApp ou e-mail' : 'Selecione o texto e copie manualmente');
+    if (ok) logCobranca();
+  }
+
   // ----- Agrupamento (Quadro e Cronograma) -----
+  const catId = name => { const c = S.categories.find(x => x.name === name); return c ? c.id : null; };
   const groupKeyOf = a => S.groupBy === 'person' ? (a.responsible || '').trim() : (a.category || '');
   function groupMeta(key) {
-    if (S.groupBy === 'person') return { name: key || 'Eu', color: key ? personColor(key) : '#1d4ed8', person: true };
+    if (S.groupBy === 'person') return { name: key || 'Eu', color: key ? personColor(key) : '#a5c8f5', person: true };
     return { name: key || 'Sem categoria', color: catColor(key), person: false };
   }
   function orderKeys(keys) {
@@ -808,7 +1087,8 @@
     if (a.dueDate) bits.push(`<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded ${done ? 'text-slate-400' : late ? 'bg-rose-50 text-rose-700 font-medium' : a.dueDate === t ? 'bg-amber-50 text-amber-700 font-medium' : 'text-slate-500'}">${icon('calendar', 'w-3 h-3')}${dateLabel(a.dueDate)}</span>`);
     if (a.recurrence && a.recurrence.type && a.recurrence.type !== 'none') bits.push(`<span class="text-slate-400" title="${esc(recLabel(a.recurrence))}">${icon('repeat', 'w-3.5 h-3.5')}</span>`);
     if (subs.length) bits.push(`<span class="inline-flex items-center gap-1 text-slate-500">${icon('list', 'w-3 h-3')}${subsDone}/${subs.length}</span>`);
-    if (S.groupBy === 'person' && a.category) bits.push(`<span class="px-1.5 py-0.5 rounded font-medium" style="background:${catColor(a.category)}22;color:${catColor(a.category)}">${esc(a.category)}</span>`);
+    if ((a.updates || []).length) bits.push(`<span class="inline-flex items-center gap-1 text-slate-500" title="${esc(lastUpdateLabel(a))}">${icon('message', 'w-3 h-3')}${a.updates.length}</span>`);
+    if (S.groupBy === 'person' && a.category) bits.push(`<span class="px-1.5 py-0.5 rounded font-medium" style="background:${catColor(a.category)};color:#334155">${esc(a.category)}</span>`);
     const who = S.groupBy === 'category' && a.responsible ? avatar(a.responsible, 'w-6 h-6 text-[10px] ml-auto') : '';
     return `
       <div data-action="open" data-id="${esc(a.id)}" data-drag="${esc(a.id)}" draggable="true"
@@ -831,12 +1111,18 @@
     const acts = S.activities.filter(a => !a.archived);
     const open = acts.filter(a => !isDone(a));
     const recentDone = acts.filter(a => isDone(a) && (localDate(a.completedAt) || '') >= addDays(t, -14));
-    let keys = open.map(groupKeyOf).concat(recentDone.map(groupKeyOf));
-    if (S.groupBy === 'person') keys.push('');
-    keys = orderKeys(keys);
+    let keys;
+    if (S.groupBy === 'person') {
+      keys = orderKeys(open.map(groupKeyOf).concat(recentDone.map(groupKeyOf)).concat(['']));
+    } else {
+      // Categorias marcadas, na ordem escolhida; depois "Sem categoria" e nomes antigos, se tiverem atividades
+      const known = new Set(S.categories.map(c => c.name));
+      const extra = [...new Set(open.map(groupKeyOf).concat(recentDone.map(groupKeyOf)))].filter(k => !known.has(k));
+      keys = S.categories.filter(c => !c.hidden).map(c => c.name).concat(orderKeys(extra));
+    }
     const board = document.getElementById('board');
     if (!keys.length) {
-      board.innerHTML = '<div class="w-full text-center py-12 text-sm text-slate-400">Nenhuma atividade ainda. Use o botão "Nova atividade".</div>';
+      board.innerHTML = '<div class="w-full text-center py-12 text-sm text-slate-400">Nenhuma coluna para mostrar. Marque as categorias em "Colunas".</div>';
       return;
     }
     board.innerHTML = keys.map(k => {
@@ -846,18 +1132,27 @@
       const openKey = S.groupBy + '|' + k;
       const lateN = list.filter(a => a.dueDate && a.dueDate < t).length;
       return `
-        <div data-drop="${esc(k)}" class="board-col snap-start flex-shrink-0 w-[82vw] sm:w-72 rounded-xl flex flex-col transition" style="background:${m.color}14">
+        <div data-drop="${esc(k)}" class="board-col snap-start flex-shrink-0 w-[82vw] sm:w-72 rounded-xl flex flex-col transition" style="background:${m.color}33">
           <div class="px-3 pt-2.5 pb-2 rounded-t-xl" style="border-top:4px solid ${m.color}">
             <div class="flex items-center justify-between gap-2">
               <span class="flex items-center gap-2 min-w-0 font-semibold text-sm text-slate-800">
                 ${m.person ? (k ? avatar(k) : meAvatar()) : `<span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${m.color}"></span>`}
                 <span class="truncate">${esc(m.name)}</span>
               </span>
+              ${!m.person && catId(k) ? `<span class="flex items-center text-slate-400">
+                <button data-action="cat-move" data-vis="1" data-id="${esc(catId(k))}" data-dir="-1" class="p-0.5 rounded hover:bg-white/80 hover:text-slate-700" title="Mover para a esquerda">${icon('chevronLeft', 'w-3.5 h-3.5')}</button>
+                <button data-action="cat-move" data-vis="1" data-id="${esc(catId(k))}" data-dir="1" class="p-0.5 rounded hover:bg-white/80 hover:text-slate-700" title="Mover para a direita">${icon('chevronRight', 'w-3.5 h-3.5')}</button>
+              </span>` : ''}
               <span class="flex items-center gap-1.5 text-xs text-slate-500">${lateN ? `<span class="px-1.5 rounded-full bg-rose-100 text-rose-700 font-semibold" title="Atrasadas">${lateN}</span>` : ''}${list.length}</span>
             </div>
-            <button data-action="col-add" data-key="${esc(k)}" class="mt-2 w-full flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white/70 hover:bg-white rounded-lg px-2.5 py-2 border border-dashed border-slate-300 transition">
-              ${icon('plus', 'w-3.5 h-3.5')} Adicionar tarefa
-            </button>
+            <div class="mt-2 flex gap-2">
+              <button data-action="col-add" data-key="${esc(k)}" class="flex-1 flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white/70 hover:bg-white rounded-lg px-2.5 py-2 border border-dashed border-slate-300 transition">
+                ${icon('plus', 'w-3.5 h-3.5')} Adicionar tarefa
+              </button>
+              ${m.person && k && list.length ? `<button data-action="cobrar-pessoa" data-key="${esc(k)}" class="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-white/80 hover:bg-white rounded-lg px-2.5 py-2 border border-emerald-200 transition" title="Gerar mensagem de cobrança">
+                ${icon('message', 'w-3.5 h-3.5')} Cobrar
+              </button>` : ''}
+            </div>
           </div>
           <div class="px-2 pb-2 space-y-2 min-h-[40px]">
             ${list.length ? list.map(cardHTML).join('') : '<p class="text-xs text-slate-400 text-center py-3">Nada aberto aqui</p>'}
@@ -894,7 +1189,8 @@
     const trackW = R.days * R.w;
     const width = labelW + trackW;
 
-    const rows = S.activities.filter(a => !a.archived && a.dueDate && (S.ganttShowDone || !isDone(a))).map(a => {
+    const hiddenCats = new Set(S.categories.filter(c => c.hidden).map(c => c.name));
+    const rows = S.activities.filter(a => !a.archived && a.dueDate && !hiddenCats.has(a.category) && (S.ganttShowDone || !isDone(a))).map(a => {
       let s0 = a.startDate || a.dueDate; // sem início: aparece só no dia do término
       if (s0 > a.dueDate) s0 = a.dueDate;
       const done = isDone(a);
@@ -902,11 +1198,6 @@
       const e0 = late ? t : a.dueDate;
       return { a, s0, due: a.dueDate, e0, late, done };
     }).filter(r => r.e0 >= start && r.s0 <= end);
-    const noDate = S.activities.filter(a => !a.archived && !a.dueDate && !isDone(a)).length;
-    document.getElementById('gantt-note').textContent =
-      'A barra vai da data de início até a data de término. Sem data de início, aparece só no dia do término. A parte listrada em vermelho é o atraso.' +
-      (noDate ? ` ${noDate} atividade(s) sem prazo não aparecem aqui.` : '');
-
     // Cabeçalho: meses e dias
     let months = '', daysRow = '', overlay = '';
     let cur = null, span = 0;
@@ -929,16 +1220,29 @@
 
     let body = '';
     const keys = orderKeys(rows.map(r => groupKeyOf(r.a)));
+    S.ganttKeys = keys.map(k => S.groupBy + '|' + k);
     keys.forEach(k => {
       const m = groupMeta(k);
       const grp = rows.filter(r => groupKeyOf(r.a) === k).sort((x, y) => x.due.localeCompare(y.due) || x.s0.localeCompare(y.s0));
+      const ck = S.groupBy + '|' + k;
+      const collapsed = !!S.ganttCollapsed[ck];
+      // Grupo recolhido: uma barra-resumo do primeiro início ao último término
+      let summary = '';
+      if (collapsed && grp.length) {
+        const minS = grp.reduce((v, r) => r.s0 < v ? r.s0 : v, grp[0].s0);
+        const maxE = grp.reduce((v, r) => r.e0 > v ? r.e0 : v, grp[0].e0);
+        const a0 = Math.max(0, idx(minS)), b0 = Math.min(R.days - 1, idx(maxE));
+        if (b0 >= a0) summary = `<div class="absolute top-2 h-4 rounded-md" style="left:${a0 * R.w + 2}px;width:${(b0 - a0 + 1) * R.w - 4}px;background:${m.color};opacity:.85"></div>`;
+      }
       body += `<div class="flex border-t border-slate-200" style="width:${width}px">
-        <div class="sticky left-0 z-10 flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-700 border-r border-slate-200" style="width:${labelW}px;min-width:${labelW}px;background:linear-gradient(${m.color}1a,${m.color}1a),#fff">
+        <button data-action="gantt-toggle" data-key="${esc(ck)}" title="${collapsed ? 'Expandir' : 'Recolher'}" class="sticky left-0 z-10 flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-700 border-r border-slate-200 text-left hover:brightness-95" style="width:${labelW}px;min-width:${labelW}px;background:linear-gradient(${m.color}40,${m.color}40),#fff">
+          <span class="text-slate-500 transition ${collapsed ? '-rotate-90' : ''}">${icon('chevronDown', 'w-3.5 h-3.5')}</span>
           ${m.person ? (k ? avatar(k, 'w-5 h-5 text-[9px]') : meAvatar('w-5 h-5')) : `<span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${m.color}"></span>`}
           <span class="truncate">${esc(m.name)}</span><span class="text-slate-400 font-normal">${grp.length}</span>
-        </div>
-        <div style="width:${trackW}px;background:${m.color}0d"></div>
+        </button>
+        <div class="relative" style="width:${trackW}px;background:${m.color}0d">${summary}</div>
       </div>`;
+      if (collapsed) return;
       grp.forEach(r => {
         const a = r.a;
         const color = S.groupBy === 'person' ? catColor(a.category) : m.color;
@@ -947,7 +1251,7 @@
         if (idx(r.due) >= 0 && idx(r.s0) < R.days) {
           bars += `<div data-action="open" data-id="${esc(a.id)}" title="${esc(a.title)} · início ${a.startDate ? a.startDate.split('-').reverse().join('/') : '—'} · término ${r.due.split('-').reverse().join('/')}"
             class="absolute top-2 h-5 cursor-pointer hover:brightness-110 ${idx(r.s0) >= 0 ? 'rounded-l-md' : ''} ${r.late ? '' : 'rounded-r-md'}"
-            style="left:${sI * R.w + 2}px;width:${Math.max(R.w - 4, (dI - sI + 1) * R.w - 4)}px;background:${color};opacity:${r.done ? 0.35 : 1}"></div>`;
+            style="left:${sI * R.w + 2}px;width:${Math.max(R.w - 4, (dI - sI + 1) * R.w - 4)}px;background:${color};opacity:${r.done ? 0.5 : 1}"></div>`;
         }
         if (r.late) {
           const lS = Math.max(0, idx(r.due) + 1), lE = Math.min(R.days - 1, idx(t));
@@ -1054,28 +1358,18 @@
 
   // ----- Configurações -----
   function renderConfig() {
-    document.getElementById('cfg-cats').innerHTML = S.categories.map(c => {
-      const n = S.activities.filter(a => !a.archived && !isDone(a) && a.category === c.name).length;
-      return `<div class="flex items-center justify-between py-2.5">
-        <span class="flex items-center gap-2.5 text-sm text-slate-700">
-          <label class="relative w-6 h-6 rounded-full cursor-pointer flex-shrink-0 ring-1 ring-black/10" style="background:${catColor(c.name)}" title="Trocar cor">
-            <input type="color" data-cat-color="${esc(c.id)}" value="${catColor(c.name)}" class="absolute inset-0 opacity-0 cursor-pointer">
-          </label>${esc(c.name)} <span class="text-xs text-slate-400">${n ? `· ${n} aberta${n > 1 ? 's' : ''}` : ''}</span></span>
-        <button data-action="del-cat" data-id="${esc(c.id)}" class="p-1.5 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50" aria-label="Excluir">${icon('trash')}</button></div>`;
-    }).join('') || '<p class="text-xs text-slate-400 py-2">Nenhuma categoria.</p>';
-
     const arch = S.activities.filter(a => a.archived).length;
     document.getElementById('cfg-archived').innerHTML = arch
       ? `<p class="text-xs text-slate-500">Há ${arch} atividade(s) arquivada(s) da versão antiga. <button data-action="restore-archived" class="text-brand-600 font-medium hover:underline">Trazer de volta</button></p>` : '';
   }
 
   // ----- Geral -----
-  const TITLES = { quadro: 'Quadro', hoje: 'Hoje', gantt: 'Cronograma', notas: 'Anotações', concluidas: 'Concluídas', config: 'Configurações', busca: 'Busca' };
+  const TITLES = { quadro: 'Quadro', hoje: 'Próximas atividades', gantt: 'Cronograma', notas: 'Anotações', concluidas: 'Concluídas', config: 'Configurações', busca: 'Busca' };
 
   function render() {
     S.activities.forEach(syncStatus);
     const t = today();
-    const pendingToday = S.activities.filter(a => !a.archived && !isDone(a) && ((a.dueDate && a.dueDate <= t) || a.status === 'Em andamento')).length;
+    const pendingToday = S.activities.filter(a => !a.archived && !isDone(a) && a.dueDate && a.dueDate <= addDays(t, 2)).length;
     document.querySelectorAll('.badge-hoje').forEach(e => e.textContent = pendingToday || '');
     document.querySelectorAll('.badge-hoje-m').forEach(e => { e.textContent = pendingToday; e.classList.toggle('hidden', !pendingToday); });
 
@@ -1092,7 +1386,7 @@
     });
 
     document.getElementById('wrap').className = (view === 'quadro' || view === 'gantt') ? 'px-4 md:px-6 py-4 md:py-6' : 'max-w-3xl mx-auto px-4 md:px-6 py-4 md:py-6';
-    if (view === 'hoje') renderChips();
+    renderCatLists();
     if (view === 'hoje') renderHoje();
     else if (view === 'quadro') renderQuadro();
     else if (view === 'gantt') renderGantt();
@@ -1125,13 +1419,14 @@
         description: a.description || '',
         responsible: a.responsible || '',
         subtasks: clean(a.subtasks || []),
+        updates: clean(a.updates || []),
         originNoteDate: a.originNoteDate || null
       };
     } else {
       draft = {
         id: null, title: '', startDate: '', dueDate: today(), category: S.catFilter !== 'ALL' ? S.catFilter : '',
         important: false, recurrence: { type: 'none', days: [] }, statusChoice: 'auto',
-        description: '', subtasks: [], originNoteDate: null, responsible: '', ...preset
+        description: '', subtasks: [], updates: [], originNoteDate: null, responsible: '', ...preset
       };
     }
     draftOriginal = JSON.stringify(draft);
@@ -1217,7 +1512,10 @@
         </div>
       </div>
       <div>
-        <label class="block text-xs font-medium text-slate-500 mb-1.5">Responsável <span class="font-normal text-slate-400">(para quem você delegou)</span></label>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block text-xs font-medium text-slate-500">Responsável <span class="font-normal text-slate-400">(para quem você delegou)</span></label>
+          ${d.id && d.responsible.trim() ? `<button type="button" data-action="cobrar-atividade" class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 px-2 py-1 rounded-md">${icon('message', 'w-3.5 h-3.5')} Cobrar</button>` : ''}
+        </div>
         <input id="sh-resp" list="resp-list" value="${esc(d.responsible)}" placeholder="Eu mesmo (deixe vazio)" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500" autocomplete="off">
         <datalist id="resp-list">${people().map(n => `<option value="${esc(n)}">`).join('')}</datalist>
         ${people().length ? `<div class="flex flex-wrap gap-1.5 mt-2">${['', ...people().slice(0, 6)].map(n => `
@@ -1257,6 +1555,20 @@
       </div>
 
       <div>
+        <label class="block text-xs font-medium text-slate-500 mb-1.5">Andamento <span class="font-normal text-slate-400">(registros com data e hora)</span></label>
+        <div class="flex gap-2">
+          <input id="sh-upd-new" type="text" placeholder="Ex.: João disse que a peça chega sexta" class="flex-1 min-w-0 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500" autocomplete="off">
+          <button type="button" data-action="sh-upd-add" class="px-3 rounded-lg text-sm font-medium text-brand-700 bg-brand-50 hover:bg-brand-100">Registrar</button>
+        </div>
+        ${d.updates.length ? `<div class="mt-2 space-y-1.5">${[...d.updates].reverse().map(u => `
+          <div class="group flex items-start gap-2 text-sm">
+            <span class="mt-0.5 text-[11px] font-medium text-slate-400 whitespace-nowrap">${fmtStamp(u.at)}</span>
+            <span class="flex-1 text-slate-700 ${u.text === 'Cobrança enviada' ? 'text-emerald-700' : ''}">${esc(u.text)}</span>
+            <button type="button" data-action="sh-upd-del" data-uid="${esc(u.id)}" class="p-0.5 text-slate-300 hover:text-rose-600 opacity-60 group-hover:opacity-100" aria-label="Apagar registro">${icon('x', 'w-3.5 h-3.5')}</button>
+          </div>`).join('')}</div>` : ''}
+      </div>
+
+      <div>
         <label class="block text-xs font-medium text-slate-500 mb-1.5">Observações</label>
         <textarea id="sh-desc" rows="3" placeholder="Detalhes (opcional)" class="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">${esc(d.description)}</textarea>
       </div>
@@ -1273,11 +1585,22 @@
     document.getElementById('sh-sub-new').focus();
   }
 
+  async function addSheetUpdate() {
+    const inp = document.getElementById('sh-upd-new');
+    const text = inp.value.trim();
+    if (!text) return;
+    readSheet();
+    if (draft.id) await addUpdate(draft.id, text);
+    else draft.updates.push({ id: 'upd-' + Date.now(), at: nowIso(), text });
+    renderSheet();
+    document.getElementById('sh-upd-new').focus();
+  }
+
   function closeSheet(force = false) {
     if (!draft) return;
     if (!force) {
       readSheet();
-      const pending = document.getElementById('sh-sub-new')?.value.trim();
+      const pending = document.getElementById('sh-sub-new')?.value.trim() || document.getElementById('sh-upd-new')?.value.trim();
       if (JSON.stringify(draft) !== draftOriginal || pending) {
         confirmBox('Descartar alterações?', 'Você fez mudanças que ainda não foram salvas.', () => closeSheet(true), 'Descartar');
         return;
@@ -1291,6 +1614,11 @@
     readSheet();
     const pendingSub = document.getElementById('sh-sub-new')?.value.trim();
     if (pendingSub) addDraftSubtask(), readSheet();
+    const pendingUpd = document.getElementById('sh-upd-new')?.value.trim();
+    if (pendingUpd) {
+      const entry = { id: 'upd-' + Date.now(), at: nowIso(), text: pendingUpd };
+      draft.updates.push(entry);
+    }
     const d = draft;
     d.subtasks = d.subtasks.filter(s => (s.title || '').trim());
     if (!d.title.trim()) { toast('Escreva o nome da atividade'); document.getElementById('sh-title').focus(); return; }
@@ -1321,6 +1649,7 @@
     if (newResp !== (a.responsible || '') && Array.isArray(a.history)) a.history.push({ timestamp: now, action: newResp ? `Delegada para ${newResp}` : 'Responsável: eu' });
     a.responsible = newResp;
     a.subtasks = d.subtasks.map(s => ({ ...s, title: s.title.trim() }));
+    a.updates = d.updates;
     a.originNoteDate = d.originNoteDate || a.originNoteDate || null;
     if (!Array.isArray(a.history)) a.history = [];
 
@@ -1409,6 +1738,7 @@
     if (!el) {
       if (e.target.id === 'sheet') closeSheet();
       if (e.target.id === 'confirm') closeConfirm(false);
+      if (e.target.id === 'msg-modal') closeCobranca();
       return;
     }
     const act = el.dataset.action;
@@ -1421,6 +1751,22 @@
       case 'star': e.stopPropagation(); toggleStar(id); break;
       case 'cat': S.catFilter = el.dataset.cat; render(); break;
       case 'group': S.groupBy = el.dataset.val; render(); break;
+      case 'board-nav':
+        if (S.view === 'quadro') S.boardMenuOpen = !S.boardMenuOpen; else S.boardMenuOpen = true;
+        if (S.view !== 'quadro') setView('quadro'); else render();
+        break;
+      case 'col-panel': S.colPanelOpen = !S.colPanelOpen; render(); break;
+      case 'gantt-panel': S.ganttPanelOpen = !S.ganttPanelOpen; render(); break;
+      case 'gantt-toggle': S.ganttCollapsed[el.dataset.key] = !S.ganttCollapsed[el.dataset.key]; render(); break;
+      case 'gantt-collapse-all': S.ganttKeys.forEach(k => S.ganttCollapsed[k] = true); render(); break;
+      case 'gantt-expand-all': S.ganttCollapsed = {}; render(); break;
+      case 'cat-vis': toggleCategoryVisible(id); break;
+      case 'cat-move': moveCategory(id, Number(el.dataset.dir), el.dataset.vis === '1'); break;
+      case 'cat-rename': { const c = S.categories.find(x => x.id === id); S.renaming = id; S.renameValue = c ? c.name : ''; S.colorPickFor = null; render(); break; }
+      case 'cat-rename-ok': renameCategory(id, S.renameValue); break;
+      case 'cat-rename-cancel': S.renaming = null; render(); break;
+      case 'cat-color-pick': S.colorPickFor = S.colorPickFor === id ? null : id; render(); break;
+      case 'cat-color': setCategoryColor(id, el.dataset.color); break;
       case 'col-add': openSheet(null, S.groupBy === 'person' ? { responsible: el.dataset.key } : { category: el.dataset.key }); break;
       case 'col-done': S.colDoneOpen[el.dataset.key] = !S.colDoneOpen[el.dataset.key]; render(); break;
       case 'gantt-range': S.ganttRange = el.dataset.val; S.ganttOffset = 0; document.getElementById('gantt').dataset.scrolled = ''; render(); break;
@@ -1428,6 +1774,26 @@
       case 'gantt-next': S.ganttOffset++; render(); break;
       case 'gantt-today': S.ganttOffset = 0; document.getElementById('gantt').dataset.scrolled = ''; render(); break;
       case 'sh-resp': readSheet(); draft.responsible = el.dataset.val; renderSheet(); break;
+      case 'sh-upd-add': addSheetUpdate(); break;
+      case 'sh-upd-del': {
+        const uid = el.dataset.uid;
+        confirmBox('Apagar registro?', 'Este registro do andamento será removido.', async () => { readSheet(); await removeUpdate(draft && draft.id, uid); renderSheet(); }, 'Apagar');
+        break;
+      }
+      case 'cobrar-atividade': {
+        readSheet();
+        const a = findAct(draft.id);
+        if (a) openCobranca(draft.responsible.trim(), [{ ...a, title: draft.title || a.title, dueDate: draft.dueDate || null, subtasks: draft.subtasks }]);
+        break;
+      }
+      case 'cobrar-pessoa': {
+        const name = el.dataset.key;
+        openCobranca(name, S.activities.filter(a => !a.archived && !isDone(a) && (a.responsible || '').trim() === name));
+        break;
+      }
+      case 'msg-close': closeCobranca(); break;
+      case 'msg-copy': copyCobranca(); break;
+      case 'msg-wa': updateWaLink(); logCobranca(); break;
       case 'toggle-done-today': S.showDoneToday = !S.showDoneToday; render(); break;
       case 'more-done': S.doneLimit += 60; render(); break;
       case 'toggle-search': {
@@ -1515,17 +1881,24 @@
     }
     if (e.target.id === 'import-input' && e.target.files[0]) { importJSON(e.target.files[0]); e.target.value = ''; }
     if (e.target.id === 'gantt-done') { S.ganttShowDone = e.target.checked; render(); }
-    if (e.target.dataset && e.target.dataset.catColor) {
-      const c = S.categories.find(x => x.id === e.target.dataset.catColor);
-      if (c) { c.color = e.target.value; render(); saveCat(c).then(ok => toast(ok ? 'Cor salva ✓' : `Erro (${lastError})`)); }
-    }
+
   });
 
+  document.addEventListener('input', e => {
+    if (e.target.id === 'msg-text') updateWaLink();
+    if (e.target.dataset && e.target.dataset.renameInput) S.renameValue = e.target.value;
+  });
   document.addEventListener('keydown', e => {
+    if (e.target.dataset && e.target.dataset.renameInput) {
+      if (e.key === 'Enter') { e.preventDefault(); renameCategory(e.target.dataset.renameInput, e.target.value); return; }
+      if (e.key === 'Escape') { e.preventDefault(); S.renaming = null; render(); return; }
+    }
     if (e.key === 'Enter' && e.target.id === 'sh-sub-new') { e.preventDefault(); addDraftSubtask(); }
+    else if (e.key === 'Enter' && e.target.id === 'sh-upd-new') { e.preventDefault(); addSheetUpdate(); }
     else if (e.key === 'Enter' && e.target.id === 'sh-title') { e.preventDefault(); saveSheet(); }
     if (e.key === 'Escape') {
       if (!document.getElementById('confirm').classList.contains('hidden')) closeConfirm(false);
+      else if (!document.getElementById('msg-modal').classList.contains('hidden')) closeCobranca();
       else if (draft) closeSheet();
     }
   });
@@ -1589,9 +1962,12 @@
     const name = inp.value.trim();
     if (!name) return;
     if (S.categories.some(c => c.name.toLowerCase() === name.toLowerCase())) { toast('Essa categoria já existe'); return; }
-    const c = { id: 'cat-' + Date.now(), name };
+    const usedColors = new Set(S.categories.map(x => x.color));
+    const c = { id: 'cat-' + Date.now(), name, hidden: false,
+      order: S.categories.reduce((m, x) => Math.max(m, x.order ?? -1), -1) + 1,
+      color: PALETTE.find(col => !usedColors.has(col)) || PALETTE[hashStr(name) % PALETTE.length] };
     S.categories.push(c);
-    S.categories.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    sortCats();
     inp.value = '';
     render();
     toast((await saveCat(c)) ? `Categoria "${name}" criada` : `Erro (${lastError})`);
